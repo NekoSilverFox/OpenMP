@@ -29,7 +29,7 @@
 
 2. **共享存储式并行** - OpenMP、OpenCL、OpenAcc
 
-3. **分布式并行** - MPI（）
+3. **分布式并行** - MPI（*Message Passing Interface*，消息传递接口）
 
     
 
