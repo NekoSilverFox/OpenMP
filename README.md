@@ -208,6 +208,80 @@ OpenMP提供的这种对于并行描述的高层抽象降低了并行编程的�
 
 
 
+## 配置 CMake 使用 OpenMP
+
+**在 MacOS 上安装 OpenMP：**
+
+- 从 LLVM 下载页安装 libomp。
+
+    1. 导航到 [LLVM 下载页](https://releases.llvm.org/)
+
+    2. 下载 OpenMP 源代码
+    3. 编译源代码并安装
+
+- 使用 [homebrew](https://brew.sh/) 安装 libomp。在终端上，运行以下命令。
+
+    ```
+    brew install libomp
+    ```
+
+
+
+**CMake 标准模块检测是否支持 OpenMP：**
+
+> https://stackoverflow.com/questions/12399422/how-to-set-linker-flags-for-openmp-in-cmakes-try-compile-function/12404666#12404666
+
+```cmake
+find_package(OpenMP)
+if (OPENMP_FOUND)
+    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+endif()
+```
+
+
+
+
+
+**配置 CMake**
+
+> https://stackoverflow.com/a/60198415/14478135
+
+```cmake
+find_package(OpenMP)
+if (OPENMP_FOUND)
+    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+endif()
+
+if(APPLE)
+    set(CMAKE_C_COMPILER clang)
+    set(CMAKE_CXX_COMPILER clang++)
+
+    if(CMAKE_C_COMPILER_ID MATCHES "Clang\$")
+        set(OpenMP_C_FLAGS "-Xpreprocessor -fopenmp")
+        set(OpenMP_C_LIB_NAMES "omp")
+        set(OpenMP_omp_LIBRARY omp)
+    endif()
+
+    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang\$")
+        set(OpenMP_CXX_FLAGS "-Xpreprocessor -fopenmp")
+        set(OpenMP_CXX_LIB_NAMES "omp")
+        set(OpenMP_omp_LIBRARY omp)
+    endif()
+
+endif()
+
+add_executable(untitled main.cpp) // 修改为自己项目的！
+
+target_link_libraries(${PROJECT_NAME} PRIVATE OpenMP::OpenMP_CXX)
+```
+
+
+
+
+
 ## 编程规范
 
 ```cpp
@@ -434,6 +508,10 @@ Hello, world.
 
 
 ## 示例
+
+### 积分计算 Pi 程序的并行化
+
+![image-20230903140955958](doc/pic/image-20230903140955958.png)
 
 
 
