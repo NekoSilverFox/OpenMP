@@ -19,6 +19,28 @@
 
 [toc]
 
+> 前言：为什么需要OpenMP/多核？
+>
+> 1. CPU 单核的性能已经达到极限
+>
+> <img src="doc/pic/image-20230902193216962.png" alt="image-20230902193216962" style="zoom:67%;" />
+>
+> 
+>
+> 2. 单核 CPU 的功耗过高
+>
+>     ![image-20230902193627834](doc/pic/image-20230902193627834.png)
+>
+>     ![image-20230902193711985](doc/pic/image-20230902193711985.png)
+>
+>     
+>
+> 3. 
+>
+>     
+>
+> 随着增加计算节点增加算力，诞生了**超级计算机**
+
 
 
 # 并行编程简介
@@ -26,12 +48,16 @@
 并行计算又叫“**超级计算**”，因为大部分时候他是依赖于超级计算机。对于超级计算机等来说，基本并行编程概念的**颗粒度由小到大**：
 
 1. **指令集并行** - CPU 流水线
-
 2. **共享存储式并行** - OpenMP、OpenCL、OpenAcc
-
 3. **分布式并行** - MPI（*Message Passing Interface*，消息传递接口）
 
-    
+
+
+**关系结构图：**
+
+![image-20230902192806071](doc/pic/image-20230902192806071.png)
+
+
 
 ## 指令集并行 - CPU 流水线
 
@@ -72,6 +98,20 @@
 - 在图中，红色部分是单周期处理器，也就是没有进行并行计算的。可以看到，对于一条指令需要完成所有操作（IF、ID、ED...）之后才能够再处理下一条指令，这造成了时钟周期很长和 CPU 元器件的闲置
 - 而对于蓝色部分便为采用了并行技术的流水线处理器：在一条指令的某个操作（比如 IF）完成后，CPU 会立即对下一条指令进行 IF 操作，而不是等待当前指令所有操作（IF、ID、ED...）都完成后再进行下一条指令的处理。显然，使用了并行之后避免了 CPU 资源的闲置，且提升了对于多条指令的处理速度
 
+## 共享存储式并行 - OpenMP、OpenCL、OpenAcc
+
+在上面讲的分布并行中，数据被分配到了每一个彼此独立的进程当中去（A、B、C部门）；本章节所说的**共享存储式并行**就是要我们关注每个**进程的内部**，比如 A 部门中有 10 个人，A 部门中所有的数据对于这 10 个人是**共享**的。
+
+在超算平台上，如果没必要跨越硬件隔离，到另外一个节点上访问数据的时候，在这个节点内部就可以使用==共享存储==来实现**线程级并行**。
+
+
+
+==重点== **进程和线程的概念：**
+
+一个进行中的程序就是一个**进程**，这个进程中包含**指令**和**数据**。**而一个进程（进程空间）内部是可以包含许多线程，并且只有一个==主线程==，这个主线程派生了许多==派生线程==**
+
+![‎jincehgn.‎001](doc/pic/‎jincehgn.‎001.jpeg)
+
 
 
 ## 分布式并行 - MPI
@@ -89,20 +129,6 @@
 在分布式并行中，所谓的分布式和隔离主要就是在**进程空间**上进行，每个节点的内存地址空间都是独立不共享的（甚至是在内存在硬件上隔离、每个节点都有自己的操作系统），数据被分配到了不用的进程中。每一个参与分布式并行的进程，他整一套指令和数据数据都是独立的。
 
 
-
-## 共享存储式并行 - OpenMP、OpenCL、OpenAcc
-
-在上面讲的分布并行中，数据被分配到了每一个彼此独立的进程当中去（A、B、C部门）；本章节所说的**共享存储式并行**就是要我们关注每个**进程的内部**，比如 A 部门中有 10 个人，A 部门中所有的数据对于这 10 个人是**共享**的。
-
-在超算平台上，如果没必要跨越硬件隔离，到另外一个节点上访问数据的时候，在这个节点内部就可以使用==共享存储==来实现**线程级并行**。
-
-
-
-==重点== **进程和线程的概念：**
-
-一个进行中的程序就是一个**进程**，这个进程中包含**指令**和**数据**。**而一个进程（进程空间）内部是可以包含许多线程，并且只有一个==主线程==，这个主线程派生了许多==派生线程==**
-
-![‎jincehgn.‎001](doc/pic/‎jincehgn.‎001.jpeg)
 
 # 并行与并发
 
@@ -138,7 +164,19 @@
 
 
 
-# OpenMP 简介
+# OpenMP
+
+## 简介
+
+**OpenMP概述:**
+
+- OpenMP-- Open Multi-Processing:支持跨平台共享内存方式的**多线程编程接口** （**规范**)
+- 面向多线程并行编码的编译指导语句
+- 包括相应的函数接口库和runtime（运行时系统）
+- 极大的简化多线程编码,支持Fortran， C and C++
+- 从SMP （Shared memory machines买现开始，已经发布和发展了25年
+
+
 
 **OpenMP**（Open Multi-Processing）是一套支持跨平台[共享内存](https://zh.wikipedia.org/wiki/共享内存)方式的多线程并发的编程[API](https://zh.wikipedia.org/wiki/API)，使用[C](https://zh.wikipedia.org/wiki/C),[C++](https://zh.wikipedia.org/wiki/C%2B%2B)和[Fortran](https://zh.wikipedia.org/wiki/Fortran)语言，可以在大多数的处理器体系和操作系统中运行，包括[Solaris](https://zh.wikipedia.org/wiki/Solaris), [AIX](https://zh.wikipedia.org/wiki/AIX), [HP-UX](https://zh.wikipedia.org/wiki/HP-UX), [GNU/Linux](https://zh.wikipedia.org/wiki/GNU/Linux), [Mac OS X](https://zh.wikipedia.org/wiki/Mac_OS_X), 和[Microsoft Windows](https://zh.wikipedia.org/wiki/Microsoft_Windows)。包括一套编译器指令、库和一些能够影响运行行为的环境变量。
 
@@ -148,9 +186,15 @@ OpenMP采用可移植的、可扩展的模型，为程序员提供了一个简�
 
 OpenMP是由*OpenMP Architecture Review Board*牵头提出的，并已被广泛接受的，用于[共享内存](https://zh.wikipedia.org/wiki/共享内存)并行系统的[多线程](https://zh.wikipedia.org/wiki/多线程)程序设计的一套指导性注释（Compiler Directive）。OpenMP支持的[编程语言](https://zh.wikipedia.org/wiki/程式語言)包括[C语言](https://zh.wikipedia.org/wiki/C语言)、[C++](https://zh.wikipedia.org/wiki/C%2B%2B)和[Fortran](https://zh.wikipedia.org/wiki/Fortran)；而支持OpenMP的[编译器](https://zh.wikipedia.org/wiki/编译器)包括[Sun Studio](https://zh.wikipedia.org/wiki/Sun_Studio)和[Intel](https://zh.wikipedia.org/wiki/Intel) Compiler，以及[开放源码](https://zh.wikipedia.org/wiki/開放源碼)的[GCC](https://zh.wikipedia.org/wiki/GCC)、[LLVM](https://zh.wikipedia.org/wiki/LLVM)和[Open64](https://zh.wikipedia.org/wiki/Open64)编译器。OpenMP提供了对并行算法的高层的抽象描述，程序员通过在[源代码](https://zh.wikipedia.org/wiki/原始碼)中加入专用的[pragma](https://zh.wikipedia.org/wiki/Pragma)来指明自己的意图，由此编译器可以自动将程序进行并行化，并在必要之处加入同步互斥以及通信。当选择忽略这些pragma，或者编译器不支持OpenMP时，程序又可退化为通常的程序（一般为串行），程序码仍然可以正常运作，只是不能利用[多线程](https://zh.wikipedia.org/wiki/多线程)来加速程序执行。
 
-<img src="doc/pic/Fork_join.svg.png" alt="Fork_join.svg" style="zoom:50%;" />
+
+
+如果一个程序有三个可以并行执行的部分，分别为:Parallel Task 1、 Parallel Task 2、 Parallel Task3，如图:
+
+![image-20230902194946512](doc/pic/image-20230902194946512.png)
 
 > [多线程](https://zh.wikipedia.org/wiki/线程)示意图，其中主线程分叉出并行的执行代码块的一些线程。
+
+
 
 OpenMP是一个跨平台的多线程实现，主线程(顺序的执行指令)生成一系列的子线程，并将任务划分给这些子线程进行执行。这些子线程并行的运行，由[运行时环境](https://zh.wikipedia.org/w/index.php?title=运行时环境&action=edit&redlink=1)将线程分配给不同的处理器。
 
@@ -164,7 +208,29 @@ OpenMP提供的这种对于并行描述的高层抽象降低了并行编程的�
 
 
 
-## 语法
+## 编程规范
+
+```cpp
+#include <omp.h>  // penMP 头文件
+
+int main()
+{
+  #pragma omp parallel  // 编译指导语句
+  { // START 并行部分
+    
+    int ID = omp_get_thread_num();  // 库函数接口
+    
+    代码**并行**区
+  } // END 并行部分
+  
+}
+```
+
+
+
+![image-20230903134950242](doc/pic/image-20230903134950242.png)
+
+
 
 ```
 #pragma omp <directive> [clause[[,] clause] ...]
@@ -172,19 +238,19 @@ OpenMP提供的这种对于并行描述的高层抽象降低了并行编程的�
 
 ### directive
 
-其中，directive共11个：
+其中，directive 共11个：
 
-- atomic 内存位置将会原子更新（Specifies that a memory location that will be updated atomically.）
-- barrier 线程在此等待，直到所有的线程都执行到此barrier。用来同步所有线程。
-- critical 其后的代码块为[临界区](https://zh.wikipedia.org/wiki/临界区)，任意时刻只能被一个线程执行。
-- flush 所有线程对所有共享对象具有相同的内存视图（view of memory）
-- for 用在for循环之前，把for循环并行化由多个线程执行。循环变量只能是整型
-- master 指定由主线程来执行接下来的程序。
-- ordered 指定在接下来的代码块中，被并行化的 for循环将依序执行（sequential loop）
-- parallel 代表接下来的代码块将被多个线程并行各执行一遍。
-- sections 将接下来的代码块包含将被并行执行的section块。
-- single 之后的程序将只会在一个线程（未必是主线程）中被执行，不会被并行执行。
-- threadprivate 指定一个变量是[线程局部存储](https://zh.wikipedia.org/wiki/线程局部存储)（thread local storage）
+- `atomic` 内存位置将会原子更新（Specifies that a memory location that will be updated atomically.）
+- `barrier` 线程在此等待，直到所有的线程都执行到此barrier。用来同步所有线程。
+- `critical` 其后的代码块为[临界区](https://zh.wikipedia.org/wiki/临界区)，任意时刻只能被一个线程执行。
+- `flush` 所有线程对所有共享对象具有相同的内存视图（view of memory）
+- `for` 用在for循环之前，把for循环并行化由多个线程执行。循环变量只能是整型
+- `master` 指定由主线程来执行接下来的程序。
+- `ordered` 指定在接下来的代码块中，被并行化的 for循环将依序执行（sequential loop）
+- `parallel` 代表接下来的代码块将被多个线程并行各执行一遍。
+- `sections` 将接下来的代码块包含将被并行执行的section块。
+- `single` 之后的程序将只会在一个线程（未必是主线程）中被执行，不会被并行执行。
+- `threadprivate` 指定一个变量是[线程局部存储](https://zh.wikipedia.org/wiki/线程局部存储)（thread local storage）
 
 ### clause
 
@@ -210,7 +276,7 @@ OpenMP提供的这种对于并行描述的高层抽象降低了并行编程的�
 
 
 
-### OpenMP的库函数
+### OpenMP 的库函数
 
 OpenMP定义了20多个库函数：
 
@@ -366,6 +432,8 @@ Hello, world.
 - 很多情况下使用多线程不仅没有好处，还会带来一些额外消耗
 
 
+
+## 示例
 
 
 
