@@ -310,6 +310,10 @@ int main()
 #pragma omp <directive> [clause[[,] clause] ...]
 ```
 
+
+
+## 库函数
+
 ### directive
 
 其中，directive 共11个：
@@ -354,75 +358,36 @@ int main()
 
 OpenMP定义了20多个库函数：
 
-1.void omp_set_num_threads(int _Num_threads);
+| 库函数名                                     | 说明                                                         |
+| -------------------------------------------- | ------------------------------------------------------------ |
+| `void omp_set_num_threads(int _Num_threads)` | **在后续并行区域设置线程数**，此调用只影响调用线程所遇到的同一级或内部嵌套级别的后续并行区域。说明：此函数只能在串行代码部分调用 |
+| `int omp_get_num_threads(void)`              | **返回当前线程数目**。说明：如果在串行代码中调用此函数，返回值为1 |
+| `int omp_get_max_threads(void)`              | 如果在程序中此处遇到未使用 num_threads() 子句指定的活动并行区域,则**返回程序的最大可用线程数量**。说明：可以在串行或并行区域调用，通常这个最大数量由omp_set_num_threads()或OMP_NUM_THREADS环境变量决定 |
+| `int omp_get_thread_num(void)`               | **返回当前线程id**。**id从1开始顺序编号，主线程id是0**       |
+| `int omp_get_num_procs(void)`                | **返回程序可用的处理器数**                                   |
+| `void omp_set_dynamic(int _Dynamic_threads)` | **启用或禁用可用线程数的动态调整**。(缺省情况下启用动态调整.)此调用只影响调用线程所遇到的同一级或内部嵌套级别的后续并行区域.如果 _Dynamic_threads 的值为非零值,启用动态调整;否则,禁用动态调整 |
+| `int omp_get_dynamic(void)`                  | **确定在程序中此处是否启用了动态线程调整**。启用了动态线程调整时返回非零值;否则,返回零值 |
+| `int omp_in_parallel(void)`                  | **确定线程是否在并行区域的动态范围内执行**。如果在活动并行区域的动态范围内调用,则返回非零值；否则,返回零值。活动并行区域是指 IF 子句求值为 TRUE 的并行区域 |
+| `void omp_set_nested(int _Nested)`           | **启用或禁用嵌套并行操作**。此调用只影响调用线程所遇到的同一级或内部嵌套级别的后续并行区域._Nested 的值为非零值时启用嵌套并行操作;否则,禁用嵌套并行操作。缺省情况下,禁用嵌套并行操作 |
+| ``int omp_get_nested(void)``                 | **确定在程序中此处是否启用了嵌套并行操作**。启用嵌套并行操作时返回非零值;否则,返回零值 |
 
-在后续并行区域设置线程数，此调用只影响调用线程所遇到的同一级或内部嵌套级别的后续并行区域.说明：此函数只能在串行代码部分调用.
+**互斥锁操作 嵌套锁操作 功能**：
 
-2.int omp_get_num_threads(void);
 
-返回当前线程数目.说明：如果在串行代码中调用此函数，返回值为1.
-
-3.int omp_get_max_threads(void);
-
-如果在程序中此处遇到未使用 num_threads() 子句指定的活动并行区域,则返回程序的最大可用线程数量.说明：可以在串行或并行区域调用，通常这个最大数量由omp_set_num_threads()或OMP_NUM_THREADS环境变量决定.
-
-4.int omp_get_thread_num(void);
-
-返回当前线程id.id从1开始顺序编号,主线程id是0.
-
-5.int omp_get_num_procs(void);
-
-返回程序可用的处理器数.
-
-6.void omp_set_dynamic(int _Dynamic_threads);
-
-启用或禁用可用线程数的动态调整.(缺省情况下启用动态调整.)此调用只影响调用线程所遇到的同一级或内部嵌套级别的后续并行区域.如果 _Dynamic_threads 的值为非零值,启用动态调整;否则,禁用动态调整.
-
-7.int omp_get_dynamic(void);
-
-确定在程序中此处是否启用了动态线程调整.启用了动态线程调整时返回非零值;否则,返回零值.
-
-8.int omp_in_parallel(void);
-
-确定线程是否在并行区域的动态范围内执行.如果在活动并行区域的动态范围内调用,则返回非零值;否则,返回零值.活动并行区域是指 IF 子句求值为 TRUE 的并行区域.
-
-9.void omp_set_nested(int _Nested);
-
-启用或禁用嵌套并行操作.此调用只影响调用线程所遇到的同一级或内部嵌套级别的后续并行区域._Nested 的值为非零值时启用嵌套并行操作;否则,禁用嵌套并行操作.缺省情况下,禁用嵌套并行操作.
-
-10.int omp_get_nested(void);
-
-确定在程序中此处是否启用了嵌套并行操作.启用嵌套并行操作时返回非零值;否则,返回零值.
-
-互斥锁操作 嵌套锁操作 功能
-
-11.void omp_init_lock(omp_lock_t * _Lock); 12. void omp_init_nest_lock(omp_nest_lock_t * _Lock);
-
-初始化一个（嵌套）互斥锁.
-
-13.void omp_destroy_lock(omp_lock_t * _Lock); 14.void omp_destroy_nest_lock(omp_nest_lock_t * _Lock);
-
-结束一个（嵌套）互斥锁的使用并释放内存.
-
-15.void omp_set_lock(omp_lock_t * _Lock); 16.void omp_set_nest_lock(omp_nest_lock_t * _Lock);
-
-获得一个（嵌套）互斥锁.
-
-17.void omp_unset_lock(omp_lock_t * _Lock); 18.void omp_unset_nest_lock(omp_nest_lock_t * _Lock);
-
-释放一个（嵌套）互斥锁.
-
-19.int omp_test_lock(omp_lock_t * _Lock); 20.int omp_test_nest_lock(omp_nest_lock_t * _Lock);
-
-试图获得一个（嵌套）互斥锁,并在成功时放回真（true）,失败是返回假（false）.
-
-21.double omp_get_wtime(void);
-
-获取wall clock time,返回一个double的数,表示从过去的某一时刻经历的时间,一般用于成对出现,进行时间比较. 此函数得到的时间是相对于线程的,也就是每一个线程都有自己的时间.
-
-22.double omp_get_wtick(void);
-
-得到clock ticks的秒数.
+| 库函数名                                              | 说明                                                         |
+| ----------------------------------------------------- | ------------------------------------------------------------ |
+| `void omp_init_lock(omp_lock_t * _Lock)`              | 初始化一个互斥锁                                             |
+| `void omp_init_nest_lock(omp_nest_lock_t * _Lock)`    | 初始化一个（嵌套）互斥锁                                     |
+| `void omp_destroy_lock(omp_lock_t * _Lock)`           | 结束一个互斥锁的使用并释放内存                               |
+| `void omp_destroy_nest_lock(omp_nest_lock_t * _Lock)` | 结束一个（嵌套）互斥锁的使用并释放内存                       |
+| `void omp_set_lock(omp_lock_t * _Lock)`               | 获得一个互斥锁                                               |
+| `void omp_set_nest_lock(omp_nest_lock_t * _Lock)`     | 获得一个（嵌套）互斥锁                                       |
+| `void omp_unset_lock(omp_lock_t * _Lock)`             | 释放一个互斥锁                                               |
+| `void omp_unset_nest_lock(omp_nest_lock_t * _Lock)`   | 释放一个（嵌套）互斥锁                                       |
+| `int omp_test_lock(omp_lock_t * _Lock)`               | 试图获得一个互斥锁,并在成功时放回真（true）,失败是返回假（false） |
+| `int omp_test_nest_lock(omp_nest_lock_t * _Lock)`     | 试图获得一个（嵌套）互斥锁,并在成功时放回真（true）,失败是返回假（false） |
+| `double omp_get_wtime(void)`                          | 获取wall clock time,返回一个double的数,表示从过去的某一时刻经历的时间,一般用于成对出现,进行时间比较. 此函数得到的时间是相对于线程的,也就是每一个线程都有自己的时间 |
+| `double omp_get_wtick(void)`                          | 得到clock ticks的秒数                                        |
 
 
 
@@ -430,7 +395,7 @@ OpenMP定义了20多个库函数：
 
 在 *omp parallel* 段内的程序代码由多线程来执行：
 
-```
+```c++
  int main(int argc, char* argv[])
  {
   #pragma omp parallel  
@@ -444,7 +409,7 @@ OpenMP定义了20多个库函数：
 
 执行结果
 
-```
+```bash
 % gcc omp.c （由單線程來執行）
 % ./a.out
 Hello, world.
@@ -463,7 +428,7 @@ OpenMP可以使用[环境变量](https://zh.wikipedia.org/wiki/环境变量) *OM
 
 ### 例子
 
-```
+```bash
 % gcc -fopenmp omp.c 
 
 % setenv OMP_NUM_THREADS 2（由2線程來執行）
@@ -481,7 +446,7 @@ Hello, world.
 
 ## 优点和缺点
 
-优点
+**优点：**
 
 - 可移植的多线程代码（在C/C++和其他语言中，人们通常为了获得多线程而调用特定于平台的原语）
 - 简单，没必要象MPI中那样处理消息传递
@@ -492,7 +457,7 @@ Hello, world.
 - 同时支持粗粒度和细粒度的并行
 - 可以在[GPU](https://zh.wikipedia.org/wiki/GPU)上使用[[4\]](https://zh.wikipedia.org/zh-cn/OpenMP#cite_note-4)
 
-缺点
+**缺点：**
 
 - 存在引入难以调试的同步错误和竞争条件的风险
 - 目前，只能在共享内存的多处理器平台高效运行
