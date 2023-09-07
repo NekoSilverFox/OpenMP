@@ -194,13 +194,16 @@ OpenMP是由*OpenMP Architecture Review Board*牵头提出的，并已被广泛�
 
 > [多线程](https://zh.wikipedia.org/wiki/线程)示意图，其中主线程分叉出并行的执行代码块的一些线程。
 
+- `Fork （派生）` 主线程 （master thread）创建一组并行化执行的线程
+- `Join（合并）` 当主线程完成工作后，他们会进行同步与终止，只剩下 master thread
 
 
-OpenMP是一个跨平台的多线程实现，主线程(顺序的执行指令)生成一系列的子线程，并将任务划分给这些子线程进行执行。这些子线程并行的运行，由[运行时环境](https://zh.wikipedia.org/w/index.php?title=运行时环境&action=edit&redlink=1)将线程分配给不同的处理器。
+
+OpenMP 是一个跨平台的多线程实现，主线程(顺序的执行指令)生成一系列的子线程，并将任务划分给这些子线程进行执行。这些子线程并行的运行，由[运行时环境](https://zh.wikipedia.org/w/index.php?title=运行时环境&action=edit&redlink=1)将线程分配给不同的处理器。
 
 要进行并行执行的代码片段需要进行相应的标记，用[预编译指令](https://zh.wikipedia.org/w/index.php?title=预编译指令&action=edit&redlink=1)使得在代码片段被执行前生成线程，每个线程会分配一个*id*，可以通过函数(called `omp_get_thread_num()`)来获得该值，该值是一个整数，主线程的id为0。在并行化的代码运行结束后，子线程*join*到主线程中，并继续执行程序。
 
-默认情况下，各个线程独立地执行并行区域的代码。可以使用*Work-sharing constructs*来划分任务，使每个线程执行其分配部分的代码。通过这种方式，使用OpenMP可以实现[任务并行](https://zh.wikipedia.org/wiki/任务并行)和[数据并行](https://zh.wikipedia.org/wiki/数据并行)。
+默认情况下，各个线程独立地执行并行区域的代码。可以使用 *Work-sharing constructs*来划分任务，使每个线程执行其分配部分的代码。通过这种方式，使用OpenMP可以实现[任务并行](https://zh.wikipedia.org/wiki/任务并行)和[数据并行](https://zh.wikipedia.org/wiki/数据并行)。
 
 运行时环境分配给每个处理器的线程数取决于使用方法、机器负载和其他因素。线程的数目可以通过[环境变量](https://zh.wikipedia.org/wiki/环境变量)或者代码中的函数来指定。在[C](https://zh.wikipedia.org/wiki/C语言)/[C++](https://zh.wikipedia.org/wiki/C%2B%2B)中，OpenMP的函数都声明在[头文件](https://zh.wikipedia.org/wiki/头文件)*omp.h*中。
 
@@ -314,20 +317,48 @@ int main()
 
 ## 库函数
 
-### directive
+### directive （指令）
 
 其中，directive 共11个：
 
 - `atomic` 内存位置将会原子更新（Specifies that a memory location that will be updated atomically.）
+
 - `barrier` 线程在此等待，直到所有的线程都执行到此barrier。用来同步所有线程。
+
 - `critical` 其后的代码块为[临界区](https://zh.wikipedia.org/wiki/临界区)，任意时刻只能被一个线程执行。
+
 - `flush` 所有线程对所有共享对象具有相同的内存视图（view of memory）
-- `for` 用在for循环之前，把for循环并行化由多个线程执行。循环变量只能是整型
+
+    
+
+- `for` 用在for循环之前，把**紧接其后的for循环**并行化由多个线程执行。使用并行的时候需要满足以下四个需求：
+
+    - 在循环的迭代器必须是可计算的并且在执行前就需要确定迭代的次数（比如可以加减的 i）
+    - 在循环的代码块中不能包含 break, return, exit
+    - 在循环的代码块中不能使用goto跳出到循环外部
+    - 迭代器只能够被for语句中的增量表达式所修改 （也就是 for 括号里的）
+
+    OpenMP 编译器不检查被 parallel for 指令并行化的循环所包含的迭代间的依赖关系，也就是很直接的把**并行区域按照线程数量直接均匀划分**，比如 for 循环 800 次，会直接把 `i = 1~100, i = 100~200, ..., i = 700~800` 分配给线程 0, 1, ..., 7 分别单独执行
+
+    ```c++
+    #pragma omp parallel num_threads(8)
+    for (int i = 1; i <= 800; i++) { ... }
+    ```
+
+    所以一个或者更多个迭代结果依赖于其他迭代的循环，一般不能被正确的并行化。
+
+    
+
 - `master` 指定由主线程来执行接下来的程序。
+
 - `ordered` 指定在接下来的代码块中，被并行化的 for循环将依序执行（sequential loop）
+
 - `parallel` 代表接下来的代码块将被多个线程并行各执行一遍。
+
 - `sections` 将接下来的代码块包含将被并行执行的section块。
+
 - `single` 之后的程序将只会在一个线程（未必是主线程）中被执行，不会被并行执行。
+
 - `threadprivate` 指定一个变量是[线程局部存储](https://zh.wikipedia.org/wiki/线程局部存储)（thread local storage）
 
 ### clause
