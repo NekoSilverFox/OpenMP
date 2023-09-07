@@ -35,10 +35,6 @@
 >
 >     
 >
-> 3. 
->
->     
->
 > 随着增加计算节点增加算力，诞生了**超级计算机**
 
 
@@ -317,6 +313,8 @@ int main()
 
 ## 库函数
 
+> https://www.bilibili.com/video/BV1WF41187TZ
+
 ### directive （指令）
 
 其中，directive 共11个：
@@ -361,26 +359,66 @@ int main()
 
 - `threadprivate` 指定一个变量是[线程局部存储](https://zh.wikipedia.org/wiki/线程局部存储)（thread local storage）
 
-### clause
+
+
+### clause （分句）
 
 共计13个clause：
 
 - copyin 让threadprivate的变量的值和主线程的值相同。
+
 - copyprivate 不同线程中的变量在所有线程中共享。
+
 - default Specifies the behavior of unscoped variables in a parallel region.
-- firstprivate 对于线程局部存储的变量，其初值是进入并行区之前的值。
+
+    
+
 - if 判断条件，可用来决定是否要并行化。
-- lastprivate 在一个循环并行执行结束后，指定变量的值为循环体在顺序最后一次执行时获取的值，或者#pragma sections在中，按文本顺序最后一个section中执行获取的值。
+
+- 
+
 - nowait 忽略barrier的同步等待。
+
 - num_threads 设置线程数量的数量。默认值为当前计算机硬件支持的最大并发数。一般就是CPU的内核数目。超线程被操作系统视为独立的CPU内核。
+
 - ordered 使用于 for，可以在将循环并行化的时候，将程序中有标记 directive ordered 的部分依序执行。
-- private 指定变量为线程局部存储。
+
+- `private` 指定变量为线程**局部存储（私有作用域）**。语法 `#pramga omp ... private(VARIABLE LIST)`。在并行计算中，可能有两个线程同时对一个变量进行处理，从而导致数据错误。所以对于线程（有时候）需要将变量私有化。能够被线程组中**所有线程**访问的变量拥有**共享作用域**，而一个只能被**单个线程**访问的变量拥有**私有作用域**。
+
+    - 每个线程都有与此变量**同名**的变量，并且不会进行初始化（==注意：==并不是深拷贝一份，而是一个未初始化的新同名变量，是只变量名一样而已，不会使用之前的定义）
+    - 所有的线程都不会使用到先前的定义
+    - 所有线程都不能给外部此同名的共享变量赋值
+
+    ---
+
+- `firstprivate` 对于线程局部存储的变量，**其初值是进入并行区之前的值**。使用方法和 `private` 一样，相当于每个线程都获得了一个**深拷贝**的私有**变量**
+
+    - 如果变量是基础数据类型，如int， double等，会将数据进行直接拷贝
+    - ﻿如果变量是一个数组，他会拷贝一个对应的数据以及大小到私有内存中
+    - ﻿如果变量为**指针**，他会将变量指向的地址拷贝过去，**指向相同地址**。
+    - ﻿如果变量是一个类的实例，他会调用对应的构造函数构造一个私有的变量
+
+    
+
+    ---
+
+- `lastprivate` 在一个循环并行执行结束后，指定变量的值为循环体在顺序最后一次执行时获取的值，或者#pragma sections在中，按文本顺序最后一个section中执行获取的值。
+
+    - 选项告诉编译器私有变量会在最后一个循环结束的时候，用私有变量的值替换掉我们共享变量的值
+    - 并行区**最后一个线程**离开循环的时候，它会将该私有变量的值赋给当前共享变量的值
+
+    
+
+    ---
+
 - reduction Specifies that one or more variables that are private to each thread are the subject of a reduction operation at the end of the parallel region.
+
 - schedule 设置for循环的并行化方法；有 dynamic、guided、runtime、static 四种方法。
     - schedule(static, chunk_size) 把chunk_size数目的循环体的执行，静态依序指定给各线程。
     - schedule(dynamic, chunk_size) 把循环体的执行按照chunk_size（缺省值为1）分为若干组（即chunk），每个等待的线程获得当前一组去执行，执行完后重新等待分配新的组。
     - schedule(guided, chunk_size) 把循环体的执行分组，分配给等待执行的线程。最初的组中的循环体执行数目较大，然后逐渐按指数方式下降到chunk_size。
     - schedule(runtime) 循环的并行化方式不在编译时静态确定，而是推迟到程序执行时动态地根据环境变量OMP_SCHEDULE 来决定要使用的方法。
+
 - shared 指定变量为所有线程共享。
 
 
