@@ -360,18 +360,18 @@ int main()
 
     ---
 
-- `ordered` 指定在接下来的代码块中，被并行化的 for循环将依序执行（sequential loop）
+- `ordered` 指定在接下来的代码块中，被并行化的 for 循环将依序执行（sequential loop）
 
 - `parallel` 代表接下来的代码块将被多个线程并行各执行一遍。
 
 - `sections` 将接下来的代码块包含将被并行执行的**`section`块**。`sections`在封闭代码的指定部分中，由线程组进行分配任务
 
-    - ﻿每个独立的`section`都需要 在`sections`里面
-    - ﻿**每个`section`都是被一个线程执行的**
+    - ﻿每个**独立**的`section`都需要 在`sections`里面
+    - ﻿**每个`section`都是被一个线程独立执行的**
     - ﻿不同的`section`可能执行不同的任务
     - ﻿**如果一个线程够快，该线程可能执行多个section**
 
-    
+    ---
 
     
 
@@ -429,7 +429,61 @@ int main()
 
     ---
 
-- reduction Specifies that one or more variables that are private to each thread are the subject of a reduction operation at the end of the parallel region.
+- `reduction` 指定在并行区域结束时，对每个线程私有的一个或多个变量进行还原操作。reduction也是一种相当常见的选项，它为我们的parallel，for 和sections提供一个**归并**的功能。也就是在并行区域结束时，reduction 中指定的变量会进行归并
+
+    ```c++
+    #pragma omp ... reduction(归并操作符:变量)
+    ```
+
+    
+
+    - 他会提供一个**私有的变量**拷贝并且初始化该私有变量。
+
+    - **私有变量的初始化的值取决于选择的归并的操作符**，reduction 提供的操作符几乎都是符合结合律的二元操作符。下表中提供了不同归并操作符及初始化私有变量的值：
+
+        | 操作符 | 初始化值 |
+        | ------ | -------- |
+        | +      | 0        |
+        | -      | 0        |
+        | *      | 1        |
+        | ^      | 0        |
+        | &      | ~0       |
+        | \|     | 0        |
+        | &&     | 1        |
+        | \|\|   | 0        |
+
+    - 这些变量的拷贝会在本地线程进行更新。
+
+    - **在最后的出口中，所有的变量拷贝将会通过操作符所定义的规则进行合并的计算，计算成一个共享变量**
+
+    ```c++
+        int num = 10;
+        std::cout << "并行外部开始处 num = " << num << "\n";  // 10
+    
+        #pragma omp parallel num_threads(4) reduction(+: num)  // 根据规则，这里每个线程的私有 num 将被初始化为 0
+        {
+            #pragma omp sections
+            {
+                #pragma omp section
+                {
+                    printf("第 1 个 section 开始处 num = %d\n", num);  // 0
+                    num = num + 5;
+                    printf("第 1 个 section 结束处 num = %d，由 tid [%d] 线程处理\n", num, omp_get_thread_num());  // 5
+                }
+    
+                #pragma omp section
+                {
+                    printf("第 2 个 section 开始处 num = %d\n", num);  // 0
+                    num = num + 11;
+                    printf("第 2 个 section 结束处 num = %d，由 tid [%d] 线程处理\n", num, omp_get_thread_num());  // 11
+                }
+            }
+        }
+    
+        std::cout << "并行外部结束 num = " << num << "\n";  // 10+5+11=26
+    ```
+
+    
 
 - schedule 设置for循环的并行化方法；有 dynamic、guided、runtime、static 四种方法。
     - schedule(static, chunk_size) 把chunk_size数目的循环体的执行，静态依序指定给各线程。
