@@ -134,6 +134,12 @@
 
 
 
+## 竞争
+
+![image-20230910145448263](doc/pic/image-20230910145448263.png)
+
+
+
 
 
 # 超级计算机
@@ -321,11 +327,20 @@ int main()
 
 其中，directive 共11个：
 
-- `atomic` 内存位置将会原子更新（Specifies that a memory location that will be updated atomically.）
+- `barrier` **线程在此等待，直到所有的线程都执行到此 barrier**。用来同步所有线程。许多情况下，它已经能够自动的插入到工作区结尾，比如说在for， single。但是它能够被nowait禁用。使用：`#pragma omp barrier`
 
-- `barrier` 线程在此等待，直到所有的线程都执行到此barrier。用来同步所有线程。
+    
 
-- `critical` 其后的代码块为[临界区](https://zh.wikipedia.org/wiki/临界区)，任意时刻只能被一个线程执行。
+- `critical` 其后的代码块为[临界区](https://zh.wikipedia.org/wiki/临界区)，**任意时刻只能被一个线程执行**。很好的解决的竞争现象，但是使用该指令将会减少程序并行化程度，且需要我们手动判断哪些部分需要用 critical。比如在链表中插入结点时可以使用 `#pragma omp critical`
+
+- `atomic` 内存位置将会原子更新。**只会应用于一条指令**。他只在特殊情况下使用：
+
+    - 在自增或者自减的情况下使用（i++; ++j）
+    - 在二元操作数的情况下使用（a+b, b*a）
+
+    ![iShot_2023-09-10_16.10.32](doc/pic/iShot_2023-09-10_16.10.32.jpg)
+
+    
 
 - `flush` 所有线程对所有共享对象具有相同的内存视图（view of memory）
 
@@ -350,6 +365,8 @@ int main()
     ---
 
 - `single` 之后的程序将只会在**一个线程（未必是主线程）**中被执行，不会被并行执行。它可能会在处理多段线程不安全代码时非常有用，在不使用`nowait`选项时，在线程组中不执行single的线程们将会等待single的结束。
+
+    
 
 - `master` 指定**只**由**主线程（单线程）**来执行接下来的程序，它不会出现等待现象。主线程不会等待其他程序的执行结果
 
@@ -395,7 +412,7 @@ int main()
 
     
 
-- nowait 忽略barrier的同步等待。
+- `nowait` 忽略barrier的同步等待。用法：`#pragma omp for nowait` 、`#pragma omp single nowait`
 
 - num_threads 设置线程数量的数量。默认值为当前计算机硬件支持的最大并发数。一般就是CPU的内核数目。超线程被操作系统视为独立的CPU内核。
 
@@ -485,11 +502,25 @@ int main()
 
     
 
-- schedule 设置for循环的并行化方法；有 dynamic、guided、runtime、static 四种方法。
-    - schedule(static, chunk_size) 把chunk_size数目的循环体的执行，静态依序指定给各线程。
-    - schedule(dynamic, chunk_size) 把循环体的执行按照chunk_size（缺省值为1）分为若干组（即chunk），每个等待的线程获得当前一组去执行，执行完后重新等待分配新的组。
-    - schedule(guided, chunk_size) 把循环体的执行分组，分配给等待执行的线程。最初的组中的循环体执行数目较大，然后逐渐按指数方式下降到chunk_size。
+- `schedule` 设置for循环的并行化方法（调度）；有 dynamic、guided、runtime、static 四种方法。
+
+    <img src="doc/pic/iShot_2023-09-10_17.18.04.jpg" alt="iShot_2023-09-10_17.18.04" style="zoom:50%;" />
+
+    - `schedule(static, chunk_size)` 把chunk_size数目的循环体的执行，静态依序指定给各线程。也就是将任务分割成 chunk_size 块（比如 chunk_size == 2，那么每个线程每次获得 for 循环 2 次）；并且他会采取轮转制度，谁先获得块，谁就能获得整一个快的大小。它低开销但是可能会造成分配不均匀
+
+        <img src="doc/pic/image-20230910173204008.png" alt="image-20230910173204008" style="zoom:50%;" />
+
+    - `schedule(dynamic, chunk_size)` 把循环体的执行按照chunk_size（缺省值为1）分为若干组（即chunk），每个等待的线程获得当前一组去执行，执行完后重新等待分配新的组。
+
+        <img src="doc/pic/iShot_2023-09-10_17.45.33.jpg" alt="iShot_2023-09-10_17.45.33" style="zoom:50%;" />
+
+    - `schedule(guided, chunk_size)` 把循环体的执行分组，分配给等待执行的线程。最初的组中的循环体执行数目较大，然后逐渐按指数方式下降到chunk_size。
+
+        <img src="doc/pic/iShot_2023-09-10_17.54.38.jpg" alt="iShot_2023-09-10_17.54.38" style="zoom:50%;" />
+
     - schedule(runtime) 循环的并行化方式不在编译时静态确定，而是推迟到程序执行时动态地根据环境变量OMP_SCHEDULE 来决定要使用的方法。
+
+    
 
 - shared 指定变量为所有线程共享。
 
