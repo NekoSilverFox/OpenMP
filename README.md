@@ -285,6 +285,14 @@ target_link_libraries(${PROJECT_NAME} PRIVATE OpenMP::OpenMP_CXX)
 
 
 
+**编译执行：**
+
+```c++
+clang++ -Xclang -fopenmp -L/opt/homebrew/opt/libomp/lib -I/opt/homebrew/opt/libomp/include -lomp XXX.cpp -o XXX
+```
+
+
+
 
 
 ## 编程规范
@@ -356,7 +364,7 @@ int main()
     OpenMP 编译器不检查被 parallel for 指令并行化的循环所包含的迭代间的依赖关系，也就是很直接的把**并行区域按照线程数量直接均匀划分**，比如 for 循环 800 次，会直接把 `i = 1~100, i = 100~200, ..., i = 700~800` 分配给线程 0, 1, ..., 7 分别单独执行
 
     ```c++
-    #pragma omp parallel num_threads(8)
+    #pragma omp parallel for num_threads(8)
     for (int i = 1; i <= 800; i++) { ... }
     ```
 
@@ -505,6 +513,12 @@ int main()
 - `schedule` 设置for循环的并行化方法（调度）；有 dynamic、guided、runtime、static 四种方法。
 
     <img src="doc/pic/iShot_2023-09-10_17.18.04.jpg" alt="iShot_2023-09-10_17.18.04" style="zoom:50%;" />
+
+    ```c++
+    #pragma omp parallel for num_threads(8) schedule(TYPE, CHUNK_SIZE)
+    ```
+
+    
 
     - `schedule(static, chunk_size)` 把chunk_size数目的循环体的执行，静态依序指定给各线程。也就是将任务分割成 chunk_size 块（比如 chunk_size == 2，那么每个线程每次获得 for 循环 2 次）；并且他会采取轮转制度，谁先获得块，谁就能获得整一个快的大小。它低开销但是可能会造成分配不均匀
 
