@@ -30,8 +30,8 @@ int vParallelLab6(const std::string str, const char b, const int num_threads)
     #pragma omp parallel for num_threads(num_threads)
     for (char i : str)
     {
-        if (i == b) ++res;
 //        printf("%d thread is running\n", omp_get_thread_num());
+        if (i == b) ++res;
     }
 
     return res;
