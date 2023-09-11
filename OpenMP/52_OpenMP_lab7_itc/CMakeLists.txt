@@ -28,6 +28,6 @@ if (APPLE)
 
 endif ()
 
-add_executable(52_OpenMP_lab7_itc main.cpp)
+add_executable(52_OpenMP_lab7_itc lab7_1_MengJianing.cpp)
 
 target_link_libraries(52_OpenMP_lab7_itc PRIVATE OpenMP::OpenMP_CXX)

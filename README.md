@@ -385,7 +385,11 @@ target_link_libraries(${PROJECT_NAME} PRIVATE OpenMP::OpenMP_CXX)
 **编译执行：**
 
 ```c++
+MacOS:
 clang++ -Xclang -fopenmp -L/opt/homebrew/opt/libomp/lib -I/opt/homebrew/opt/libomp/include -lomp XXX.cpp -o XXX
+  
+Windows/Linux:
+g++ -fopenmp XXX.cpp -o XXX
 ```
 
 
@@ -427,6 +431,8 @@ int main()
 ## 库函数
 
 > https://www.bilibili.com/video/BV1WF41187TZ
+>
+> https://www.cnblogs.com/lfri/p/10121712.html
 
 ### directive （指令）
 

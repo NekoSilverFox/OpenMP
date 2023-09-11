@@ -9,13 +9,14 @@ int main(int argc, char** argv)
     double b[N];
     double s = 0;
 
-#pragma omp parallel for
+    /* Устранение проблем "гонки" при обеспечении параллельной производительности */
+ #pragma omp parallel for reduction(+: s)
     for (int i = 0; i < N; i++)
     {
         b[i] = i * sqrt(i);
         s += b[i];
     }
 
-    printf("%f", s);
+    printf("%f", s);  // correct - 12633303.179735
     return 0;
 }
