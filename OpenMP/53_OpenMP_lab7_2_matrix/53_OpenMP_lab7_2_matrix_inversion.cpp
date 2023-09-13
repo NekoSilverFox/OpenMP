@@ -113,45 +113,62 @@ double det(int n, double* matrix)
 {
     if (1 == n) return matrix[0];
 
-    int mov = 0;
     double sum = 0.0;
     double* sub_matrix = new double[(n - 1) * (n - 1)];
 
+#pragma omp parallel for schedule(dynamic, n) reduction(+: sum)
     for (int row = 0; row < n; row++)
     {
         for (int sub_row_matrix = 0; sub_row_matrix < n - 1; sub_row_matrix++)
         {
-            mov = row > sub_row_matrix ? 0 : 1; //subMat中小于Matrow的行，同行赋值，等于的错过，大于的加一
-            for (int j = 0; j<n - 1; j++)  //从Mat的第二列赋值到第n列
+            int mov = row > sub_row_matrix ? 0 : 1;
+            for (int j = 0; j < n - 1; j++)
             {
                 sub_matrix[sub_row_matrix*(n - 1) + j] = matrix[(sub_row_matrix + mov)*n + j + 1];
             }
         }
-        int flag = (row % 2 == 0 ? 1 : -1);  //因为列数为0，所以行数是偶数时候，代数余子式为1.
-        sum += flag* matrix[row*n] * det(n - 1, sub_matrix);//Mat第一列各元素与其代数余子式积的和即为行列式
+        int flag = (row % 2 == 0 ? 1 : -1);
+        sum += flag* matrix[row*n] * det(n - 1, sub_matrix);
     }
-    delete[]sub_matrix;
+    delete[] sub_matrix;
     
     return sum;
 }
 
 
-int main()
+int main(int argc, char** argv)
 {
     printf(">>> Лаб7.2 Мэн Цзянин 5140904/30202\n");
 
-    int n = 3;
-//    std::cout << "n = ";
-//    std::cin >> n;
+    /* Check parameters */
+    if (2 != argc)
+    {
+        printf("[ERROR] The program does not have enough parameters: "
+               "parameter 1 should be number threads.");
+        return -1;
+    }
 
+    ::num_threads = atoi(argv[1]);
+    if (num_threads > omp_get_max_threads()) num_threads = omp_get_max_threads();
 
-    double* matrix_a = getRandomMatrix(n); // source
+    printf("Number threads: %d\n", num_threads);
+
+    int n;
+    printf("Please INPUT the dimension of the matrix `n` = ");
+    std::cin >> n;
+    if (n < 1)
+    {
+        printf("[ERROR] n should >= 1\n");
+        return -1;
+    }
+
+    double* matrix_a = getRandomMatrix(n); // source matrix
     double* sub_matrix = new double[(n - 1)*(n - 1)];
     double* adjoint_matrix = new double[n*n];
     double* inverse_matrix = new double[n*n];
 
     /* Generate matrix */
-    printf("Source random matrix A:\n");
+    printf("\nSource random matrix A:\n");
     printMatrix(matrix_a, n);
 
     /* get det matrix */
@@ -164,75 +181,62 @@ int main()
     printf("\ndef matrix: %f\n", det_matrix);
 
 
-    int i_adjoint_matrix = 0;  // index
-#pragma omp parallel for num_threads(::num_threads)
-    for (int i_mat = 1; i_mat <= n; i_mat++)
+    /* adjugate matrix T */
+#pragma omp single
     {
-        for (int j_mat = 1; j_mat <= n; j_mat++)
+        int i_adjoint_matrix = 0;
+        for (int i_mat = 1; i_mat <= n; i_mat++)
         {
-            int i_matrix = 0;
-
-            /* cosine */
-            for (int i = 0; i < n*n; i++)
+            for (int j_mat = 1; j_mat <= n; j_mat++)
             {
-                int x = i+1;
-                int row= 1;
-                int col= 0;
-                while (true)
+                int i_matrix = 0;
+
+                /* cosine */
+                for (int i = 0; i < n*n; i++)
                 {
-                    if (x - n > 0)
+                    int x = i + 1;
+                    int row = 1;
+                    int col = 0;
+                    while (true)
                     {
-                        x = x - n;
-                        row++;
+                        if (x - n > 0)
+                        {
+                            x = x - n;
+                            row++;
+                        }
+                        else
+                        {
+                            col = x;
+                            break;
+                        }
                     }
-                    else
+                    if (row != i_mat && col != j_mat)
                     {
-                        col = x;
-                        break;
+                        sub_matrix[i_matrix] = matrix_a[i];
+                        i_matrix++;
                     }
                 }
-                if (row != i_mat && col != j_mat)
-                {
-                    sub_matrix[i_matrix] = matrix_a[i];
-                    i_matrix++;
-                }
+                adjoint_matrix[i_adjoint_matrix] = (i_adjoint_matrix % 2 == 0 ? 1 : -1)*det(n - 1, sub_matrix);//求伴随矩阵各元素
+                i_adjoint_matrix++;
             }
-            adjoint_matrix[i_adjoint_matrix] = (i_adjoint_matrix % 2 == 0 ? 1 : -1)*det(n - 1, sub_matrix);//求伴随矩阵各元素
-            i_adjoint_matrix++;
         }
     }
-    
-    
-    adjoint_matrix = matrixT(n, n, adjoint_matrix);//转置
-    cout << "该矩阵的伴随矩阵为" << endl;
-    int adMat_index = 0;
-    for (int i = 0; i < n; i++)
+
+    /* adjugate matrix */
+    adjoint_matrix = matrixT(n, n, adjoint_matrix);
+    printf("\nThe adjugate matrix of this matrix is:\n");
+    printMatrix(adjoint_matrix, n);
+
+#pragma omp parallel for
+    for (int i = 0; i < n*n; i++)
     {
-        for (int j = 0; j < n; j++)
-        {
-            cout << adjoint_matrix[adMat_index] <<"\t";
-            adMat_index++;
-        }
-        cout << endl;
-    }
-    for (int i = 0; i < n*n;i++)
         inverse_matrix[i] = adjoint_matrix[i] / det_matrix;
-
-    cout << "该矩阵的逆矩阵为" << endl;
-    int inverseMat_index = 0;
-    for (int i = 0; i < n; i++)
-    {
-        for (int j = 0; j < n; j++)
-        {
-            cout << inverse_matrix[inverseMat_index]<<"\t";
-            inverseMat_index++;
-        }
-        cout << endl;
     }
 
-    delete[]matrix_a;
+    printf("\n[RESULT] The inverse matrix is:\n");
+    printMatrix(inverse_matrix, n);
 
-
+    delete[] matrix_a;
 
     return 0;
 }

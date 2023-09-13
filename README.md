@@ -438,7 +438,7 @@ int main()
 
 其中，directive 共11个：
 
-- `barrier` **线程在此等待，直到所有的线程都执行到此 barrier**。用来同步所有线程。许多情况下，它已经能够自动的插入到工作区结尾，比如说在for， single。但是它能够被nowait禁用。使用：`#pragma omp barrier`
+- `barrier (屏障)` **线程在此等待，直到所有的线程都执行到此 barrier**。用来同步所有线程。许多情况下，它已经能够自动的插入到工作区结尾，比如说在for， single。但是它能够被nowait禁用。使用：`#pragma omp barrier`
 
     
 
@@ -525,7 +525,7 @@ int main()
 
 - `nowait` 忽略barrier的同步等待。用法：`#pragma omp for nowait` 、`#pragma omp single nowait`
 
-- num_threads 设置线程数量的数量。默认值为当前计算机硬件支持的最大并发数。一般就是CPU的内核数目。超线程被操作系统视为独立的CPU内核。
+- `num_threads` 设置线程数量的数量。默认值为当前计算机硬件支持的最大并发数。一般就是CPU的内核数目。超线程被操作系统视为独立的CPU内核。
 
 - ordered 使用于 for，可以在将循环并行化的时候，将程序中有标记 directive ordered 的部分依序执行。
 
@@ -627,7 +627,7 @@ int main()
 
         <img src="doc/pic/image-20230910173204008.png" alt="image-20230910173204008" style="zoom:50%;" />
 
-    - `schedule(dynamic, chunk_size)` 把循环体的执行按照chunk_size（缺省值为1）分为若干组（即chunk），每个等待的线程获得当前一组去执行，执行完后重新等待分配新的组。
+    - `schedule(dynamic, chunk_size)` 把循环体的执行按照 chunk_size（缺省值为1）分为若干组（即 chunk），每个等待的线程获得当前一组去执行，执行完后重新等待分配新的组。
 
         <img src="doc/pic/iShot_2023-09-10_17.45.33.jpg" alt="iShot_2023-09-10_17.45.33" style="zoom:50%;" />
 
