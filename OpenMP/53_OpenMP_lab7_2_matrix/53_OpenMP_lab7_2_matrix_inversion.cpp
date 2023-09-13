@@ -156,9 +156,9 @@ int main(int argc, char** argv)
     int n;
     printf("Please INPUT the dimension of the matrix `n` = ");
     std::cin >> n;
-    if (n < 1)
+    if (n < 2)
     {
-        printf("[ERROR] n should >= 1\n");
+        printf("[ERROR] n should >= 2\n");
         return -1;
     }
 
