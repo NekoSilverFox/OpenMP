@@ -44,99 +44,124 @@
 
 **架构（Архитектура）**
 
-| **На русском**                           | **English**                             |
-| ---------------------------------------- | --------------------------------------- |
-| многоядерность (качество процессора)     | multi-core (processor property)         |
-| множествоядерность (качество процессора) | many-core (processor property)          |
-| гиперпоточность (технология)             | hyper-threading (technology)            |
-| микроархитектура                         | microarchitecture                       |
-| вычислительная система                   | computer system                         |
-| северный и южный мосты                   | north and south bridges                 |
-| одна команда, множество данных           | SIMD (Single-Instruction Multiple-Data) |
+| **На русском**                           | **English**                             | 中文 |
+| ---------------------------------------- | --------------------------------------- | ---- |
+| многоядерность (качество процессора)     | multi-core (processor property)         |      |
+| множествоядерность (качество процессора) | many-core (processor property)          |      |
+| гиперпоточность (технология)             | hyper-threading (technology)            |      |
+| микроархитектура                         | microarchitecture                       |      |
+| вычислительная система                   | computer system                         |      |
+| северный и южный мосты                   | north and south bridges                 |      |
+| одна команда, множество данных           | SIMD (Single-Instruction Multiple-Data) |      |
 
 
 
 **软件开发（Разработка ПО）**
 
-| инструментальная платформа                                   | instrumental platform                                        |
-| ------------------------------------------------------------ | ------------------------------------------------------------ |
-| целевая платформа                                            | target platform                                              |
-| компилятор                                                   | compiler                                                     |
-| интерпретатор                                                | interpreter                                                  |
-| компоновка кода                                              | code linking                                                 |
-| сборка кода (процесс)                                        | code building (process)                                      |
-| сборка кода (интерпретируемый код, напри- мер, byte-код или код CLI) | code assembly (interpretable code, byte code or CLI code)    |
-| сопрограмма (поток без смены контекста)                      | coroutine (thread without context switch)                    |
-| поток (исполняемого кода)                                    | thread (of the executable code)                              |
-| поток (аудио-данных)                                         | (audio data) stream                                          |
-| поточность (свойство кода)                                   | threading (code property)                                    |
-| многопоточность (свойство кода)                              | multi-threading (code property)                              |
-| зафиксировать код (на сервере, с последними изменениями)     | to  commit  the  code  (on  server,  with  last changes)     |
-| запрос на добавление (кода в основную вет- ку)               | (code) pull request (to the main branch)                     |
-| ветка кода (как функциональность разрабаты- ваемого ПО, не ответвление ПО) | code branch (as functionality of the developing software, not software fork) |
-| ответвление (другого проекта в новый)                        | fork (of the another project to the new one)                 |
-| хранилище (пакетов, информации по само- анализу)             | repository (of the packages, of the introspection information) |
-| ссылка на данные                                             | data reference                                               |
-| указатель на данные                                          | data pointer                                                 |
-| опорный проект (как пример использования технологии)         | reference  project  (as  sample  of  technology usage)       |
-| двоичный код                                                 | binary code                                                  |
-| регулярное  программирование  (программи- рование в терминах сечений и массивов) | array programing (programing in terms of the slices and arrays) |
-| описатель (процесса, массива)                                | (process, array) descriptor                                  |
+| **На русском**                                               | **English**                                                  | 中文 |
+| ------------------------------------------------------------ | ------------------------------------------------------------ | ---- |
+| инструментальная платформа                                   | instrumental platform                                        |      |
+| целевая платформа                                            | target platform                                              |      |
+| компилятор                                                   | compiler                                                     |      |
+| интерпретатор                                                | interpreter                                                  |      |
+| компоновка кода                                              | code linking                                                 |      |
+| сборка кода (процесс)                                        | code building (process)                                      |      |
+| сборка кода (интерпретируемый код, напри- мер, byte-код или код CLI) | code assembly (interpretable code, byte code or CLI code)    |      |
+| сопрограмма (поток без смены контекста)                      | coroutine (thread without context switch)                    |      |
+| поток (исполняемого кода)                                    | thread (of the executable code)                              |      |
+| поток (аудио-данных)                                         | (audio data) stream                                          |      |
+| поточность (свойство кода)                                   | threading (code property)                                    |      |
+| многопоточность (свойство кода)                              | multi-threading (code property)                              |      |
+| зафиксировать код (на сервере, с последними изменениями)     | to  commit  the  code  (on  server,  with  last changes)     |      |
+| запрос на добавление (кода в основную вет- ку)               | (code) pull request (to the main branch)                     |      |
+| ветка кода (как функциональность разрабаты- ваемого ПО, не ответвление ПО) | code branch (as functionality of the developing software, not software fork) |      |
+| ответвление (другого проекта в новый)                        | fork (of the another project to the new one)                 |      |
+| хранилище (пакетов, информации по само- анализу)             | repository (of the packages, of the introspection information) |      |
+| ссылка на данные                                             | data reference                                               |      |
+| указатель на данные                                          | data pointer                                                 |      |
+| опорный проект (как пример использования технологии)         | reference  project  (as  sample  of  technology usage)       |      |
+| двоичный код                                                 | binary code                                                  |      |
+| регулярное  программирование  (программи- рование в терминах сечений и массивов) | array programing (programing in terms of the slices and arrays) |      |
+| описатель (процесса, массива)                                | (process, array) descriptor                                  |      |
 
 
 
 **代码优化（Оптимизация кода）**
 
-| перекрытие памяти                                      | memory overlapping                        |
-| ------------------------------------------------------ | ----------------------------------------- |
-| межпроцедурная оптимизация                             | interprocedural optimization              |
-| выравнивание данных (в памяти)                         | data alignment (in memory)                |
-| векторизация кода                                      | code vectorization                        |
-| зависимость по данным                                  | data dependency                           |
-| оптимизатор  высокого  уровня  (компонент компилятора) | high level optimizer (compiler component) |
-| ведомая профилем оптимизация                           | profile guided optimization               |
-| сечение массива                                        | array slice                               |
-| сплошной массив                                        | contiguous array                          |
-| хвостовая рекурсия                                     | tail recursion                            |
-| потоковые расширения SIMD                              | SSE (Streaming SIMD Extensions)           |
-| улучшенные векторные расширения                        | AVX (Advanced Vector Extensions)          |
-| эффективность кода                                     | code productivity                         |
-| разворачивание циклов                                  | loop unrolling                            |
+| **На русском**                                         | **English**                               | 中文                     |
+| ------------------------------------------------------ | ----------------------------------------- | ------------------------ |
+| перекрытие памяти                                      | memory overlapping                        | 内存重叠                 |
+| межпроцедурная оптимизация                             | interprocedural optimization              | 进程间优化               |
+| выравнивание данных (в памяти)                         | data alignment (in memory)                | 数据对齐（在内存中）     |
+| векторизация кода                                      | code vectorization                        | 代码向量化               |
+| зависимость по данным                                  | data dependency                           | 数据依赖                 |
+| оптимизатор  высокого  уровня  (компонент компилятора) | high level optimizer (compiler component) | 高级优化器（编译器组件） |
+| ведомая профилем оптимизация                           | profile guided optimization               | 基于性能分析的优化       |
+| сечение массива                                        | array slice                               | 数组切片                 |
+| сплошной массив                                        | contiguous array                          | 连续数组                 |
+| хвостовая рекурсия                                     | tail recursion                            | 尾递归                   |
+| потоковые расширения SIMD                              | SSE (Streaming SIMD Extensions)           | 流式单指令多数据扩展     |
+| улучшенные векторные расширения                        | AVX (Advanced Vector Extensions)          | 高级矢量扩展             |
+| эффективность кода                                     | code productivity                         | 代码生产率               |
+| разворачивание циклов                                  | loop unrolling                            | 循环展开                 |
 
 
 
 **多语言编程（Многоязыковое программирование）**
 
-| привязка (к другому коду)                                    | binding (to another code)                                    |
-| ------------------------------------------------------------ | ------------------------------------------------------------ |
-| самоанализ кода                                              | code introspection                                           |
-| выстраивание данных (например, для переда- чи в другую функцию) | data marshaling (for passing to another function for example) |
-| взаимодействие (технологий)                                  | interoperability (of technologies)                           |
-| связующий код (одной технологии с другой)                    | glue code (of the one technology with another)               |
-| двоичный интерфейс приложений                                | ABI (application binary interface)                           |
-| архитектура набора команд                                    | ISA (instruction set architecture)                           |
-| интерфейс программирования приложений                        | API (application programming interface)                      |
-| организация стека (соглашение о вызове)                      | stack considerations (calling convention)                    |
-| соглашения по именованию (соглашение о вызове)               | naming conventions (calling convention)                      |
-| передача параметров (соглашение о вызове)                    | argument passing (calling convention)                        |
-| хранилище самоанализа GObject                                | GIR (GObject Introspection Repository)                       |
-| связующий код                                                | glue code                                                    |
+| **На русском**                                               | **English**                                                  | 中文                                       |
+| ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------ |
+| привязка (к другому коду)                                    | binding (to another code)                                    | 绑定（到另一段代码）                       |
+| самоанализ кода                                              | code introspection                                           | 代码内省                                   |
+| выстраивание данных (например, для переда- чи в другую функцию) | data marshaling (for passing to another function for example) | 数据编组（例如，用于传递给另一个函数）     |
+| взаимодействие (технологий)                                  | interoperability (of technologies)                           | 技术互操作性                               |
+| связующий код (одной технологии с другой)                    | glue code (of the one technology with another)               | 粘合代码（将一种技术与另一种技术连接起来） |
+| двоичный интерфейс приложений                                | ABI (application binary interface)                           | 应用程序二进制接口                         |
+| архитектура набора команд                                    | ISA (instruction set architecture)                           | 指令集架构                                 |
+| интерфейс программирования приложений                        | API (application programming interface)                      | 应用程序编程接口                           |
+| организация стека (соглашение о вызове)                      | stack considerations (calling convention)                    | 栈相关问题（调用约定）                     |
+| соглашения по именованию (соглашение о вызове)               | naming conventions (calling convention)                      | 命名约定（调用约定）                       |
+| передача параметров (соглашение о вызове)                    | argument passing (calling convention)                        | 参数传递（调用约定）                       |
+| хранилище самоанализа GObject                                | GIR (GObject Introspection Repository)                       | GObject 内省仓库                           |
+| связующий код                                                | glue code                                                    | 粘合代码                                   |
 
 
 
 **高性能计算（Высокопроизводительные вычисления）**
 
-| связность памяти (например, кэша)        | memory coherence (cache for example) |
-| ---------------------------------------- | ------------------------------------ |
-| эффективность кода                       | code productivity                    |
-| пространственная локализация             | spatial locality                     |
-| временнАя локализация                    | temporal locality                    |
-| задержка памяти (при обращении к памяти) | memory latency (due memory access)   |
-| проблема стены памяти                    | memory wall problem                  |
+| **На русском**                           | **English**                          | 中文                                                   |
+| ---------------------------------------- | ------------------------------------ | ------------------------------------------------------ |
+| Процесс                                  | Process                              | 进程                                                   |
+| Поток                                    | Thread                               | 现成                                                   |
+| связность памяти (например, кэша)        | memory coherence (cache for example) | 内存一致性（两个或更多处理器或内核共享相同的内存区域） |
+| эффективность кода                       | code productivity                    | 代码生产率                                             |
+| пространственная локализация             | spatial locality                     | 空间局部性                                             |
+| временнАя локализация                    | temporal locality                    | 时间局部性                                             |
+| задержка памяти (при обращении к памяти) | memory latency (due memory access)   | 存储延迟（由于内存访问）                               |
+| проблема стены памяти                    | memory wall problem                  | 存储墙问题                                             |
 
 
 
 # 并行编程简介
+
+**基本概念:**
+
+- **节点**
+    - ﻿服务器，等同于一台台式或者笔记本电脑。许多节点组成集群甚至是超算系统
+    - 节点的核数 = 该节点在不超线程下支持运行的最多线程数量
+- **进程**
+    - 程序运行的实例对象，进程拥有独立的堆栈以及数据，数据不能共享。一般开启的一个应用程序就是一个进程。
+    - ﻿进程可以使用MPI进行跨节点通信
+- **线程**
+    - 是进程中的实际运作单位，被包含在进程之中。进程可以调用多个线程来处理任务，但线程不能开启进程
+    - ﻿线程内可以有独立的内存及数据，也可以线程间共享数据
+    - ﻿**线程一般用于节点内井行，一般不用做跨节点并行**
+- ﻿节点内 $进程数 * 线程数<=节点核数$
+    - 假如节点有24核，运行4个进程，每个进程最多开6个线程。超线程会导致程序运行很慢很慢
+
+
+
+
 
 并行计算又叫“**超级计算**”，因为大部分时候他是依赖于超级计算机。对于超级计算机等来说，基本并行编程概念的**颗粒度由小到大**：
 
@@ -786,6 +811,70 @@ Hello, world.
 
 
 # MPI
+
+## 简介
+
+MPI（*Message Passing Interface*），中文：消息传递接口。是一个并行计算的应用程序接口，常在超级电脑、电脑集群等**非共享内存**环境程序设计。
+
+注意：MPI 是一个跨语言的**通讯协议**，用于编写并行计算机。支持点对点和广播。MPI是一个信息传递应用程序接口，包括协议和和语义说明，他们指明其如何在各种实现中发挥其特性。MPI的目标是高性能，大规模性，和可移植性。MPI在今天仍为高性能计算的主要模型。
+
+- 一种新的库描述，不是一种语言。共有上百个函数调用接口，提供与C和Fortran语言的綁定
+- MPI 是一种标准或规范的代表，而不是特指某一个对它的具体实现。迄令为止所有的井行计算机制造商都提供对MPI的支持﻿（Intel MPI，Mpich 和 OpenMPI）
+- MPI 是一种消息传递编程模型，并成为这种编程模型的代表和事实上的标准
+
+
+
+**MPI 的版本：**
+
+因为 MPI 只是一个通信协议，所以有不同的实现方式。主流的有：Intel MPI，Mpich 和 OpenMPI。由于 Intel 的禁令等，目前国内在逐步放弃 Intel MPI，并且本文中不再对 Intel MPI 进行探讨。
+
+
+
+**Mpich/OpenMPI：**
+
+| 支持的语言 | 编译指令 |
+| ---------- | -------- |
+| fortran    | mpif90   |
+| f77        | mpif77   |
+| C          | mpicc    |
+| C++        | mpicxx   |
+
+
+
+**示例：**
+
+![iShot_2023-09-14_21.37.08](doc/pic/iShot_2023-09-14_21.37.08.jpg)
+
+谨记：**进程**之间数据隔离
+
+让我们通过给对方发短信为例，更好的理解**通信**：
+
+1. 【初始化】打开短信 APP
+2. 【进程 ID】知道对方手机号
+3. 【准备数据】输入短信内容
+4. 【send】发送短信
+5. 【状态检查】发送成功
+6. 【结束】退出短信 APP
+
+
+
+## 环境配置
+
+> 安装：https://juejin.cn/s/install%20mpi%20on%20mac
+>
+> VSCode 下使用： https://medium.com/@li.nguyen_15905/setting-up-vscode-for-mpi-programming-b6665da6b4ad
+
+本文中基于 MacOS
+
+
+
+**MPI 程序运行：**
+
+```bash
+mpirun -np 进程数量 可执行文件名
+```
+
+
 
 
 
