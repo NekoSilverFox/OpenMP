@@ -58,31 +58,32 @@
 
 **软件开发（Разработка ПО）**
 
-| **На русском**                                               | **English**                                                  | 中文 |
-| ------------------------------------------------------------ | ------------------------------------------------------------ | ---- |
-| инструментальная платформа                                   | instrumental platform                                        |      |
-| целевая платформа                                            | target platform                                              |      |
-| компилятор                                                   | compiler                                                     |      |
-| интерпретатор                                                | interpreter                                                  |      |
-| компоновка кода                                              | code linking                                                 |      |
-| сборка кода (процесс)                                        | code building (process)                                      |      |
-| сборка кода (интерпретируемый код, напри- мер, byte-код или код CLI) | code assembly (interpretable code, byte code or CLI code)    |      |
-| сопрограмма (поток без смены контекста)                      | coroutine (thread without context switch)                    |      |
-| поток (исполняемого кода)                                    | thread (of the executable code)                              |      |
-| поток (аудио-данных)                                         | (audio data) stream                                          |      |
-| поточность (свойство кода)                                   | threading (code property)                                    |      |
-| многопоточность (свойство кода)                              | multi-threading (code property)                              |      |
-| зафиксировать код (на сервере, с последними изменениями)     | to  commit  the  code  (on  server,  with  last changes)     |      |
-| запрос на добавление (кода в основную вет- ку)               | (code) pull request (to the main branch)                     |      |
-| ветка кода (как функциональность разрабаты- ваемого ПО, не ответвление ПО) | code branch (as functionality of the developing software, not software fork) |      |
-| ответвление (другого проекта в новый)                        | fork (of the another project to the new one)                 |      |
-| хранилище (пакетов, информации по само- анализу)             | repository (of the packages, of the introspection information) |      |
-| ссылка на данные                                             | data reference                                               |      |
-| указатель на данные                                          | data pointer                                                 |      |
-| опорный проект (как пример использования технологии)         | reference  project  (as  sample  of  technology usage)       |      |
-| двоичный код                                                 | binary code                                                  |      |
-| регулярное  программирование  (программи- рование в терминах сечений и массивов) | array programing (programing in terms of the slices and arrays) |      |
-| описатель (процесса, массива)                                | (process, array) descriptor                                  |      |
+| **На русском**                                               | **English**                                                  | 中文   |
+| ------------------------------------------------------------ | ------------------------------------------------------------ | ------ |
+| инструментальная платформа                                   | instrumental platform                                        |        |
+| целевая платформа                                            | target platform                                              |        |
+| компилятор                                                   | compiler                                                     |        |
+| интерпретатор                                                | interpreter                                                  |        |
+| компоновка кода                                              | code linking                                                 |        |
+| сборка кода (процесс)                                        | code building (process)                                      |        |
+| сборка кода (интерпретируемый код, напри- мер, byte-код или код CLI) | code assembly (interpretable code, byte code or CLI code)    |        |
+| сопрограмма (поток без смены контекста)                      | coroutine (thread without context switch)                    |        |
+| поток (исполняемого кода)                                    | thread (of the executable code)                              |        |
+| поток (аудио-данных)                                         | (audio data) stream                                          |        |
+| поточность (свойство кода)                                   | threading (code property)                                    |        |
+| многопоточность (свойство кода)                              | multi-threading (code property)                              |        |
+| зафиксировать код (на сервере, с последними изменениями)     | to  commit  the  code  (on  server,  with  last changes)     |        |
+| запрос на добавление (кода в основную вет- ку)               | (code) pull request (to the main branch)                     |        |
+| ветка кода (как функциональность разрабаты- ваемого ПО, не ответвление ПО) | code branch (as functionality of the developing software, not software fork) |        |
+| ответвление (другого проекта в новый)                        | fork (of the another project to the new one)                 |        |
+| хранилище (пакетов, информации по само- анализу)             | repository (of the packages, of the introspection information) |        |
+| ссылка на данные                                             | data reference                                               |        |
+| указатель на данные                                          | data pointer                                                 |        |
+| опорный проект (как пример использования технологии)         | reference  project  (as  sample  of  technology usage)       |        |
+| двоичный код                                                 | binary code                                                  |        |
+| регулярное  программирование  (программи- рование в терминах сечений и массивов) | array programing (programing in terms of the slices and arrays) |        |
+| описатель (процесса, массива)                                | (process, array) descriptor                                  |        |
+| итератор                                                     | iterator                                                     | 迭代器 |
 
 
 
@@ -965,6 +966,76 @@ int main(int argc, char **argv)
 <img src="doc/pic/iShot_2023-09-15_16.00.08.jpg" alt="iShot_2023-09-15_16.00.08" style="zoom:50%;" />
 
 
+
+## MPI 基本数据类型
+
+| MPI 数据类型       | C 类型         |
+| ------------------ | -------------- |
+| MPI_INT            | int            |
+| MPI_FLOAT          | float          |
+| MPI_DOUBLE         | double         |
+| MPI_SHORT          | shoat          |
+| MPI_LONG           | long           |
+| MPI_CHAR           | char           |
+| MPI_UNSIGNED_CHAR  | unsigned char  |
+| MPI_UNSIGNED_SHORT | unsigned short |
+| MPI_UNSIGNED       | unsigned       |
+| MPI_UNSIGNED_LONG  | unsigned long  |
+| MPI_LONG_DOUBLE    | long double    |
+| MPI_BYTE           | byte           |
+
+
+
+## MPI 通信
+
+### 点对点通讯
+
+**点对点通讯**：唯一发送进程，唯一接受进程
+
+<img src="doc/pic/iShot_2023-09-15_16.13.52.jpg" alt="iShot_2023-09-15_16.13.52" style="zoom:50%;" />
+
+
+
+#### 阻塞型
+
+<img src="doc/pic/iShot_2023-09-15_16.16.51.jpg" alt="iShot_2023-09-15_16.16.51" style="zoom:50%;" />
+
+**点对点通讯 - MPI_Send(...)：**
+
+```c++
+MPI_Send(buffer, count, datatype, destination, tag, communicator);
+
+比如：
+  MPI_Send(&buffer, 1, MPI_INT, i, tag, MPI_COMM_WORLD);
+```
+
+1. `buffer` 指明消息**缓存的起始地址**，即存放要发送的数据信息
+2. `count` 参数指明消息中给定的**数据类型有多少项**，数据类型由第三个参数给定
+3. `datatype` **数据类型**要么是基本数据类型，要么是导出数据类型，后者由用户生成指定一个可能是由混合数据类型组成的非连续数据项。
+4. `destination` 参数是**目的进程的标识符**(进程编号)
+5. `tag` 消息标签
+6. `communicator` 参数标识进程组和通信上下文，即**通信域**。通常，消息只在同组的进程间传送。但是MPI允许通过 intercomgunigators在组间通信
+
+
+
+**点对点通讯 - MPI_Recv(...):**
+
+```c++
+MPI_Recv(address, count, datatype, source, tag, communicator, status)
+  
+比如：
+  MPI_Recv(&tmp, 1, MPI_INT,i, tag, MPI_COMM_WORLD, &Status)
+```
+
+1. `address` 第一个参数指明**接收消息缓冲的起始地址**，即**存放接收消息的内存地址**
+2. `count` 第二个参数指明给定数据类型可以被接收的最大项数
+3. `datatype` 第三个参数指明接收的数据类型
+4. `source` 第四个参数是**源进程标识符** (编号)
+5. `tag` 第五个是消息标签
+6. `communicator` 第六个参数标识一个通信域
+7. `status` 第七个参数是一个指针，指向一个结构：`MPI_Status Status`
+    - ﻿存放有关接收消息的各种信息。(`Status.MPI_SOURCE`, `Status.MPI_TAG`)
+    - ﻿﻿`MPI_Get_count(&Status, MPI_INT, &C)` 读出实际接收到的数据项数
 
 # Supercomputer
 
