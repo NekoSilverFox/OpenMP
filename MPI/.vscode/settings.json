@@ -14,5 +14,6 @@
         "functional": "cpp",
         "utility": "cpp",
         "__locale": "cpp"
-    }
+    },
+    "cmake.sourceDirectory": "/Users/fox/雪狸的文件/Programma/OpenMP/MPI/01_macos_mpi_test"
 }

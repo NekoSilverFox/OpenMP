@@ -814,6 +814,10 @@ Hello, world.
 
 # MPI
 
+> https://habr.com/ru/articles/549312/
+>
+> https://www.bilibili.com/video/BV1px4y1K7v1/
+
 ## 简介
 
 MPI（*Message Passing Interface*），中文：消息传递接口。是一个并行计算的应用程序接口，常在超级电脑、电脑集群等**非共享内存**环境程序设计。
