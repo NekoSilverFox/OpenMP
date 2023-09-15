@@ -27,7 +27,7 @@ int vParallelLab6(const std::string str, const char b, const int num_threads)
 {
     int res = 0;
 
-    #pragma omp parallel for num_threads(num_threads)
+    #pragma omp parallel for num_threads(num_threads) reduction(+: res)
     for (char i : str)
     {
 //        printf("%d thread is running\n", omp_get_thread_num());

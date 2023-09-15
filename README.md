@@ -133,6 +133,7 @@
 | ---------------------------------------- | ------------------------------------ | ------------------------------------------------------ |
 | Процесс                                  | Process                              | 进程                                                   |
 | Поток                                    | Thread                               | 现成                                                   |
+| г**о**нок                                |                                      | 竞争                                                   |
 | связность памяти (например, кэша)        | memory coherence (cache for example) | 内存一致性（两个或更多处理器或内核共享相同的内存区域） |
 | эффективность кода                       | code productivity                    | 代码生产率                                             |
 | пространственная локализация             | spatial locality                     | 空间局部性                                             |
@@ -582,7 +583,7 @@ int main()
 
     ---
 
-- `reduction` 指定在并行区域结束时，对每个线程私有的一个或多个变量进行还原操作。reduction也是一种相当常见的选项，它为我们的parallel，for 和sections提供一个**归并**的功能。也就是在并行区域结束时，reduction 中指定的变量会进行归并
+- `reduction` 指定在并行区域结束时，对每个线程私有的一个或多个变量进行还原操作。reduction 也是一种相当常见的选项，它为我们的parallel，for 和sections提供一个**归并**的功能。也就是在并行区域结束时，reduction 中指定的变量会进行归并
 
     ```c++
     #pragma omp ... reduction(归并操作符:变量)
@@ -868,13 +869,100 @@ MPI（*Message Passing Interface*），中文：消息传递接口。是一个�
 
 
 
+**MPI 程序编译：**
+
+```bash
+mpicc 源文件.cpp -o 可执行文件名
+```
+
+- 与 GCC 的参数同样可以在这里使用。建议使用编译器优化选项，如"-O2 "。如果使用 math.h 模块的数学函数，可能需要使用"-lm "开关才能成功链接。
+- **不要在 main 函数中创建大量局部变量** (локальные переменные)。当运行一个需要为局部变量占用大量内存的程序时，具有动态堆栈的 Linux 系统会表现得非常异常，所以最好使用全局变量。
+
+
+
 **MPI 程序运行：**
 
 ```bash
 mpirun -np 进程数量 可执行文件名
+
+mpirun -np 5 -maxtime 30 APP # 代表程序任务以批处理模式在 5 个处理器上运行不超过半小时
+```
+
+**mpirun 命令的常用参数：**
+
+- `-np <进程数>` 程序所需的处理器/进程数量
+- `-maxtime <最大时间>` 以分钟为单位的最长计数时间。默认设置为 5 小时。任务在队列中的位置取决于该时间。超过该时间后，任务将被强制取消。
+- `-quantum <时间量值>` 表示任务是后台任务，并指定后台任务的量子大小（以分钟为单位）。还必须为后台任务指定 `maxtime` 参数，否则它在系统中的存活时间不会超过默认的 5 小时。
+
+
+
+==重点== **示例程序，及 MPI 5 个基本接口：**
+
+```c++
+#include <iostream>
+#include "mpi.h"
+
+/**
+ * 如果要编译 MPI 程序，不能使用 gcc/clang
+ * 
+ *  编译：mpicc XXX.cpp -o EXE
+ *  运行：mpirun -np 处理器数量 EXE
+ */
+
+int main(int argc, char **argv)
+{
+    /* 1. 初始化 MPI 环境，用于接受命令行的参数 */
+    MPI_Init(&argc, &argv);
+  
+    /* 2. 获取通信域总的进程数 */
+    int world_size;
+    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+
+    /* 3. 获取当前的进程 ID  */
+    int world_rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+
+    /* 4. 获取处理器名称 */
+    char processor_name[MPI_MAX_PROCESSOR_NAME];
+    int name_len;
+    MPI_Get_processor_name(processor_name, &name_len);
+
+    printf("Hello world from process %s with rank %d out of %d processors\n", processor_name, world_rank, world_size);
+
+    /* 5. 释放/结束为 MPI 分配的任何资源，一般放在最后一行，如果不添加这个程序不会终止 */
+    MPI_Finalize();
+}
 ```
 
 
+
+## MPI 并行模式
+
+- **相并行模式 (Phase Parallel) - 对等模式**：每个节点间地位一致，执行操作完全一致
+
+    <img src="doc/pic/image-20230915155755538.png" alt="image-20230915155755538" style="zoom:50%;" />
+
+- **主从模式 (Master-Stave Parallel)：**
+
+    - 拥有一个主进程
+
+    - 主进程一般作为计算任务的分配方不参与计算
+
+    - 从进程执行计算任务
+
+    - 主进程负责管理数据的分发与接收
+
+        ![image-20230915155909330](doc/pic/image-20230915155909330.png)
+
+- **分治并行 (Divide and Conquer Parallel)**：类似于制度里管理，以金字塔形状上级管理下级
+
+- **流水线并行 (Pipeline parallel)**：和计算机的流水线一个概念
+
+- **工作池并行 (work pool Parallel)**：类似于 OpenMP，需要的时候从工作池里取
+
+*后三种并行模式极少使用*
+
+<img src="doc/pic/iShot_2023-09-15_16.00.08.jpg" alt="iShot_2023-09-15_16.00.08" style="zoom:50%;" />
 
 
 

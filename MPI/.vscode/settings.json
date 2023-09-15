@@ -1,0 +1,18 @@
+{
+    "files.associations": {
+        "__hash_table": "cpp",
+        "__tuple": "cpp",
+        "array": "cpp",
+        "charconv": "cpp",
+        "type_traits": "cpp",
+        "limits": "cpp",
+        "ratio": "cpp",
+        "tuple": "cpp",
+        "variant": "cpp",
+        "compare": "cpp",
+        "complex": "cpp",
+        "functional": "cpp",
+        "utility": "cpp",
+        "__locale": "cpp"
+    }
+}
