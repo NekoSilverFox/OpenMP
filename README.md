@@ -1033,6 +1033,8 @@ int main(int argc, char **argv)
 
 ![image-20230915194244757](doc/pic/image-20230915194244757.png)
 
+可以看到 **tag** 有类似于邮戳的作用
+
 
 
 **MPI tag 的种类及使用：**
@@ -1059,6 +1061,8 @@ int main(int argc, char **argv)
 
 
 #### 阻塞型
+
+阻塞：函数接口会等到我们的数据操作完成之后再返回
 
 <img src="doc/pic/iShot_2023-09-15_16.16.51.jpg" alt="iShot_2023-09-15_16.16.51" style="zoom:50%;" />
 
@@ -1099,6 +1103,44 @@ MPI_Recv(address, count, datatype, source, tag, communicator, status)
     - `Status.MPI_SOURCE`：发送进程的标号
     - `Status.MPI_TAG`：消息的标记号
     - ﻿﻿`MPI_Get_count(MPI_Status* status, MPI_Datatype datatype, int* count)`：消息的长度，通过借助于 `MPI_Get_count` 函数，将 status 变量和数据类型传入，消息长度存放在 `count` 中
+
+
+
+**示例：雅可比（Jacobi）迭代**
+
+> 雅可比迭代就是中间数的值由其上下左右数的平均值来确定：
+>
+> ![image-20230917181312353](doc/pic/image-20230917181312353.png)
+>
+> 伪代码：
+>
+> ```c++
+> ...
+> 
+>   double A[N+1][N+1], B[N+1][N+1]
+>   
+>   /* step 是迭代次数 */
+>   for k=1, step:
+> 		for i=1, N:
+> 			for j=1, N:
+> 				/* B 是临时数组 */
+> 				B[i][j] = 0.25*(A[i-1][j] + A[i+1][j] + A[i][j+1] + A[i][j-1])
+>           
+>     /* 覆盖掉原数组 A */
+>     for i=1, N:
+> 			for j=1, N:
+> ...
+> ```
+
+![image-20230917183315522](doc/pic/image-20230917183315522.png)
+
+
+
+
+
+
+
+
 
 
 
