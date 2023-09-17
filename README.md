@@ -20,6 +20,10 @@
 
 [toc]
 
+> http://parallel.zhangjikai.com/
+>
+> 
+>
 > 前言：为什么需要OpenMP/多核？
 >
 > 1. CPU 单核的性能已经达到极限
@@ -34,7 +38,7 @@
 >
 >     ![image-20230902193711985](doc/pic/image-20230902193711985.png)
 >
->     
+> 
 >
 > 随着增加计算节点增加算力，诞生了**超级计算机**
 
@@ -817,6 +821,8 @@ Hello, world.
 > https://habr.com/ru/articles/549312/
 >
 > https://www.bilibili.com/video/BV1px4y1K7v1/
+>
+> http://parallel.zhangjikai.com/
 
 ## 简介
 
@@ -877,7 +883,12 @@ MPI（*Message Passing Interface*），中文：消息传递接口。是一个�
 **MPI 程序编译：**
 
 ```bash
+对于 C：
 mpicc 源文件.cpp -o 可执行文件名
+
+
+对应 C++：
+mpicxx 源文件.cpp -o 可执行文件名
 ```
 
 - 与 GCC 的参数同样可以在这里使用。建议使用编译器优化选项，如"-O2 "。如果使用 math.h 模块的数学函数，可能需要使用"-lm "开关才能成功链接。
@@ -973,20 +984,67 @@ int main(int argc, char **argv)
 
 ## MPI 基本数据类型
 
-| MPI 数据类型       | C 类型         |
-| ------------------ | -------------- |
-| MPI_INT            | int            |
-| MPI_FLOAT          | float          |
-| MPI_DOUBLE         | double         |
-| MPI_SHORT          | shoat          |
-| MPI_LONG           | long           |
-| MPI_CHAR           | char           |
-| MPI_UNSIGNED_CHAR  | unsigned char  |
-| MPI_UNSIGNED_SHORT | unsigned short |
-| MPI_UNSIGNED       | unsigned       |
-| MPI_UNSIGNED_LONG  | unsigned long  |
-| MPI_LONG_DOUBLE    | long double    |
-| MPI_BYTE           | byte           |
+| MPI 数据类型       | C 类型                   |
+| ------------------ | ------------------------ |
+| MPI_CHAR           | signed char              |
+| MPI_SHORT          | signed short int         |
+| MPI_INT            | signed int               |
+| MPI_LONG           | signed long int          |
+| MPI_LONG_LONG_INT  | long long int (optional) |
+| MPI_UNSIGNED_CHAR  | unsigned char            |
+| MPI_UNSIGNED_SHORT | unsigned short int       |
+| MPI_UNSIGNED       | unsigned int             |
+| MPI_UNSIGNED_LONG  | unsigned long int        |
+| MPI_FLOAT          | float                    |
+| MPI_DOUBLE         | double                   |
+| MPI_LONG_DOUBLR    | long double              |
+| MPI_BYTE           | 无                       |
+| MPI_PACKED         | 无                       |
+
+在传递信息的时候，要保证两个方面的类型匹配（除了 `MPI_BYTE` 和 `MPI_PACKED` ）：
+
+1. 传输的数据类型和通信中声明的 MPI 类型要对应，即数据类型为 `int`， 那么通信时声明的数据类型就要为 `MPI_INT`。
+2. 发送方和接受方的类型要匹配
+
+`MPI_BYTE` 和 `MPI_PACKED` 可以和任意以字节为单位的存储相匹配。 `MPI_BYTE` 可以用于不加修改的传送内存中的二进制值。
+
+## 消息标签 tag
+
+> 我们需要理解为什么需要“消息标签（tag）”。
+
+假如我们需要进程 P 传送 2 段数据给进程 Q：
+
+- 第 1 段数据为 A 的前 32 字节
+- 第 2 段数据为 B 的前 16 字节
+
+但是在发送和接收过程中可能出现以下情况（未使用标签）：
+
+![image-20230915193502215](doc/pic/image-20230915193502215.png)
+
+尽管 16 字节的消息 B 后发送，但是更早的到达进程 Q 被接收；就会被 recv 错误的存放在 32 字节的 X 当中。
+
+如果使用标签，为每个发送和接收的数据添加消息标签就不会出现这个错误：
+
+![image-20230915193842576](doc/pic/image-20230915193842576.png)
+
+
+
+**使用标签同样可以简化对于大量不同服务请求的处理：**
+
+![image-20230915194244757](doc/pic/image-20230915194244757.png)
+
+
+
+**MPI tag 的种类及使用：**
+
+在消息传递时，发送操作必须明确指定发送对象的进程标号和消息标识，但是接收消息时，可以通过使用 `MPI_ANY_SOURCE` 和 `MPI_ANY_TAG` 来接受任意进程发送给本进程的消息，类似于通配符。`MPI_ANY_SOURCE` 和 `MPI_ANY_TAG` 可以同时使用或者分别单独使用。
+
+| TAG            | 使用                                                         |
+| -------------- | ------------------------------------------------------------ |
+| MPI_ANY_TAG    | 【标识**数据**】如果给tag一个任意值 MPI_ANY_TAG 则任何tag都是可接收的 |
+| MPI_ANY_SOURCE | 【标识进程】标识任何进程发送的消息都可以接收：即本接收操作可以匹配任何进程发送的消息。但其它的要求还必须满足，比如tag的匹配 |
+|                |                                                              |
+|                |                                                              |
 
 
 
@@ -1015,7 +1073,7 @@ MPI_Send(buffer, count, datatype, destination, tag, communicator);
 
 1. `buffer` 指明消息**缓存的起始地址**，即存放要发送的数据信息
 2. `count` 参数指明消息中给定的**数据类型有多少项**，数据类型由第三个参数给定
-3. `datatype` **数据类型**要么是基本数据类型，要么是导出数据类型，后者由用户生成指定一个可能是由混合数据类型组成的非连续数据项。
+3. `datatype` **发送数据的数据类型**，**数据类型**要么是基本数据类型，要么是导出数据类型，后者由用户生成指定一个可能是由混合数据类型组成的非连续数据项。
 4. `destination` 参数是**目的进程的标识符**(进程编号)
 5. `tag` 消息标签
 6. `communicator` 参数标识进程组和通信上下文，即**通信域**。通常，消息只在同组的进程间传送。但是MPI允许通过 intercomgunigators在组间通信
@@ -1037,9 +1095,12 @@ MPI_Recv(address, count, datatype, source, tag, communicator, status)
 4. `source` 第四个参数是**源进程标识符** (编号)
 5. `tag` 第五个是消息标签
 6. `communicator` 第六个参数标识一个通信域
-7. `status` 第七个参数是一个指针，指向一个结构：`MPI_Status Status`
-    - ﻿存放有关接收消息的各种信息。(`Status.MPI_SOURCE`, `Status.MPI_TAG`)
-    - ﻿﻿`MPI_Get_count(&Status, MPI_INT, &C)` 读出实际接收到的数据项数
+7. `status` 第七个参数是一个指针，指向一个结构：`MPI_Status Status`，通过它我们可以获得下面的三种主要信息
+    - `Status.MPI_SOURCE`：发送进程的标号
+    - `Status.MPI_TAG`：消息的标记号
+    - ﻿﻿`MPI_Get_count(MPI_Status* status, MPI_Datatype datatype, int* count)`：消息的长度，通过借助于 `MPI_Get_count` 函数，将 status 变量和数据类型传入，消息长度存放在 `count` 中
+
+
 
 # Supercomputer
 
