@@ -1008,6 +1008,8 @@ int main(int argc, char **argv)
 
 `MPI_BYTE` 和 `MPI_PACKED` 可以和任意以字节为单位的存储相匹配。 `MPI_BYTE` 可以用于不加修改的传送内存中的二进制值。
 
+
+
 ## 消息标签 tag
 
 > 我们需要理解为什么需要“消息标签（tag）”。
@@ -1048,9 +1050,64 @@ int main(int argc, char **argv)
 |                |                                                              |
 |                |                                                              |
 
+## 常用函数
+
+**获取当前时间**：`double MPI_Wtime(void)`
+
+
+
+**获取设备名称**：`int MPI_Get_processor_name(char *name, int *result_len)`
+
+- `name` - 当前进程所在机器的名字
+- `result_len` - 返回名字的长度
+
+
+
+**获取 MPI 版本**：`int MPI_Get_version(int *version, int *subversion)`
+
+- `version` - MPI 主版本号
+- `subversion` - MPI 次版本号
+
+
+
+**判断 `MPI_Init` 是否执行，唯一一个可以在 `MPI_Init` 之前调用的函数**：`int MPI_Initialized(int *flag)`
+
+- `flag` - 是否已调用
+
+
+
+**使通信域 Comm 中的所有进程退出**：`int MPI_Abort(MPI_Comm comm, int errorcode)`
+
+- `comm` - 退出进程所在的通信域
+- `errorcode` - 错误码
+
+
+
+**事先获取要接受的消息的相关信息（source、tag、comm、status）:** `MPI_Probe(int source, int tag, MPI_Comm comm, MPI_Status* status)`
+
+
+
+**获得消息的长度：** `MPI_Get_count(MPI_Status* status, MPI_INT, int receive_count)`
+
 
 
 ## MPI 通信
+
+对于 MPI 中的通信中，从通信对象方面看可以分为两类：
+
+- **点对点通信** - 只涉及发送方和接收方两个进程，并且发送和接收时要指明发送和接收的对象。在发送进程和接收进程里，两者的调用的函数也不相同。
+
+    对于点对点通信来讲，从发送行为不同又可以分为下面三类：
+
+    - **阻塞通信** - 在发送和接受操作完成之前，程序一直处于等待状态
+    - **非阻塞通信** - 无需等待发送和操作行为完成就可以返回，然后再调用特定的方法判断通信操作是否完成
+    - **重复非阻塞通信** - 针对一个通信被多次调用的情况（例如循环结构内的通信调用），重复利用通信对象，而不是每次都开启一个新的通信。单次的通信和非阻塞通信的行为相同
+
+    
+
+- **组通信** - 一个特定组内的所有进程同时参与通信，并且组通信在每个进程中的调用方式完全一样。
+
+    对于组通信来说，会为组内的进程隐式添加一个同步点，等到所有进程到达后再往下执行。在后面的文章我们会详细介绍上面提到的通信类别。
 
 ### 点对点通讯
 
@@ -1137,6 +1194,52 @@ MPI_Recv(address, count, datatype, source, tag, communicator, status)
 
 
 
+
+# 锁 🔐
+
+## 死锁
+
+假如使用阻塞型消息通讯，有以下状态：两个进程都在等待对方。这就由于**通讯次序不一致**出现了**死锁**。无论等到天荒地老都不会等到对方消息
+
+![image-20230917224826571](doc/pic/image-20230917224826571-4980107.png)
+
+代码层面体现为：
+
+```c++
+MPI_Comm_dup(MPI_COMM_WORLD, &comm);
+if (rank == 0)
+{
+  MPI_Recv(buffA0, ...);
+  MPI_Send(buffB0, ...)
+}
+else if (rank == 1)
+{
+  MPI_Recv(buffA1, ...);
+  MPI_Send(buffB1, ...)
+}
+```
+
+
+
+解决使用环形通讯的模式：一个先发送，另一个先接收
+
+<img src="doc/pic/iShot_2023-09-18_00.19.04.jpg" alt="iShot_2023-09-18_00.19.04" style="zoom:50%;" />
+
+**调换 Recv 和 Send 的顺序，使得一个接收对应一个发送：**
+
+```c++
+MPI_Comm_dup(MPI_COMM_WORLD, &comm);
+if (rank == 0)
+{
+  MPI_Recv(buffA0, ...);
+  MPI_Send(buffB0, ...);
+}
+else if (rank == 1)
+{
+  MPI_Send(buffB1, ...);
+  MPI_Recv(buffA1, ...);
+}
+```
 
 
 

@@ -28,6 +28,10 @@ int main(int argc, char **argv)
 
     printf("Hello world from process %s with rank %d out of %d processors\n", processor_name, world_rank, world_size);
 
+    /* 获取当前系统时间 */
+    double time = MPI_Wtime();
+    std::cout << "Func MPI_Wtime(): " << time << "\n";
+
     /* 5. Finalize: Any resources allocated for MPI can be freed  释放/结束为 MPI 分配的任何资源，一般放在最后一行，如果不添加这个程序不会终止 */
     MPI_Finalize();
 }
