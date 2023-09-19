@@ -8,12 +8,14 @@
 
 
 
+
 [![License](https://img.shields.io/badge/license-MIT-brightgreen)](LICENSE)
 
 
 
 <div align="left">
 <!-- 顶部至此截止 -->
+
 
 
 <!-- SPbSTU 报告起始 -->
@@ -154,15 +156,15 @@
 
 - **节点**
     - ﻿服务器，等同于一台台式或者笔记本电脑。许多节点组成集群甚至是超算系统
-    - 节点的核数 = 该节点在不超线程下支持运行的最多线程数量
+    - ﻿节点的核数 = 该节点在不超线程下支持运行的最多线程数量
 - **进程**
     - 程序运行的实例对象，进程拥有独立的堆栈以及数据，数据不能共享。一般开启的一个应用程序就是一个进程。
-    - ﻿进程可以使用MPI进行跨节点通信
+    - 进程可以使用MPI进行跨节点通信
 - **线程**
     - 是进程中的实际运作单位，被包含在进程之中。进程可以调用多个线程来处理任务，但线程不能开启进程
-    - ﻿线程内可以有独立的内存及数据，也可以线程间共享数据
-    - ﻿**线程一般用于节点内井行，一般不用做跨节点并行**
-- ﻿节点内 $进程数 * 线程数<=节点核数$
+    - 线程内可以有独立的内存及数据，也可以线程间共享数据
+    - **线程一般用于节点内井行，一般不用做跨节点并行**
+- 节点内 $进程数 * 线程数<=节点核数$
     - 假如节点有24核，运行4个进程，每个进程最多开6个线程。超线程会导致程序运行很慢很慢
 
 
@@ -471,7 +473,7 @@ int main()
 
 - `barrier (屏障)` **线程在此等待，直到所有的线程都执行到此 barrier**。用来同步所有线程。许多情况下，它已经能够自动的插入到工作区结尾，比如说在for， single。但是它能够被nowait禁用。使用：`#pragma omp barrier`
 
-    
+  ​    
 
 - `critical` 其后的代码块为[临界区](https://zh.wikipedia.org/wiki/临界区)，**任意时刻只能被一个线程执行**。很好的解决的竞争现象，但是使用该指令将会减少程序并行化程度，且需要我们手动判断哪些部分需要用 critical。比如在链表中插入结点时可以使用 `#pragma omp critical`
 
@@ -486,7 +488,7 @@ int main()
 
 - `flush` 所有线程对所有共享对象具有相同的内存视图（view of memory）
 
-    
+  ​    
 
 - `for` 用在for循环之前，把**紧接其后的那一个 `for` 循环**并行化由多个线程执行。使用并行的时候需要满足以下四个需求：
 
@@ -508,7 +510,7 @@ int main()
 
 - `single` 之后的程序将只会在**一个线程（未必是主线程）**中被执行，不会被并行执行。它可能会在处理多段线程不安全代码时非常有用，在不使用`nowait`选项时，在线程组中不执行single的线程们将会等待single的结束。
 
-    
+  ​    
 
 - `master` 指定**只**由**主线程（单线程）**来执行接下来的程序，它不会出现等待现象。主线程不会等待其他程序的执行结果
 
@@ -548,11 +550,11 @@ int main()
 
 - default Specifies the behavior of unscoped variables in a parallel region.
 
-    
+  ​    
 
 - if 判断条件，可用来决定是否要并行化。
 
-    
+  ​    
 
 - `nowait` 忽略barrier的同步等待。用法：`#pragma omp for nowait` 、`#pragma omp single nowait`
 
@@ -571,9 +573,9 @@ int main()
 - `firstprivate` 对于线程局部存储的变量，**其初值是进入并行区之前的值**。使用方法和 `private` 一样，相当于每个线程都获得了一个**深拷贝**的私有**变量**
 
     - 如果变量是基础数据类型，如int， double等，会将数据进行直接拷贝
-    - ﻿如果变量是一个数组，他会拷贝一个对应的数据以及大小到私有内存中
-    - ﻿如果变量为**指针**，他会将变量指向的地址拷贝过去，**指向相同地址**。
-    - ﻿如果变量是一个类的实例，他会调用对应的构造函数构造一个私有的变量
+    - 如果变量是一个数组，他会拷贝一个对应的数据以及大小到私有内存中
+    - 如果变量为**指针**，他会将变量指向的地址拷贝过去，**指向相同地址**。
+    - 如果变量是一个类的实例，他会调用对应的构造函数构造一个私有的变量
 
     
 
@@ -1115,6 +1117,20 @@ int main(int argc, char **argv)
 
 <img src="doc/pic/iShot_2023-09-15_16.13.52.jpg" alt="iShot_2023-09-15_16.13.52" style="zoom:50%;" />
 
+对于点对点通信来说，有四种通信模式，分别是标准通信、缓存通信、同步通信和就绪通信。在前面我们还提到点对点通信可以分为阻塞通信、非阻塞通信和重复非阻塞通信三种类别，每种通信类别都有这四种通信模式。这里我们以非阻塞通信为例介绍这四种通信模式。下面是非阻塞通信对应的四种通信模式：
+
+| 通信模式                         | 发送      | 接受     |
+| :------------------------------- | :-------- | :------- |
+| 标准通信模式（standard mode）    | MPI_Send  | MPI_Recv |
+| 缓存通信模式（buffered mode）    | MPI_Bsend |          |
+| 同步通信模式（synchronous mode） | MPI_Ssend |          |
+| 就绪通信模式（ready mode）       | MPI_Rsend |          |
+
+对于非标准的通信模式来说，只有发送操作，没有相应的接收操作。这四种模式的不同点主要表现在两个方面：
+
+- 数据缓冲区（ buffering ）- 在消息被目标进程接收之前，数据存储的地方
+- 同步（ synchronization ） - 怎样才算完成了发送操作
+
 
 
 #### 阻塞型
@@ -1124,6 +1140,14 @@ int main(int argc, char **argv)
 <img src="doc/pic/iShot_2023-09-15_16.16.51.jpg" alt="iShot_2023-09-15_16.16.51" style="zoom:50%;" />
 
 **点对点通讯 - MPI_Send(...)：**
+
+使用 `MPI_Send` 进行消息发送的被成为**标准通信模式**，在这种模式下，是否使用数据缓冲区以及对数据缓冲区的管理都是由 MPI 自身决定的，用户无法控制。
+根据 MPI 是否选择缓存发送数据，可以将发送操作完成的标准可以分为下面两种情况：
+
+- MPI 缓存数据 - 在这种情况下，发送操作不管接受操作是否执行，都可以进行，并且发送操作不需要接收操作收到数据就可以成功返回。
+- MPI 不缓存数据 - 缓存数据是需要付出代价的，它会延长通信的时间，并且缓冲区并不是总能得到的，所以 MPI 可以选择不缓存数据。在这种情况下，只有当接收操作被调用，并且发送的数据完全到达接收缓冲区后，发送操作才算完成。需要注意的一点，对于非阻塞通信，发送操作虽然没有完成，但是发送调用可以正确返回，程序可以执行其他操作。
+
+<img src="doc/pic/标准通信.png" alt="标准通信" style="zoom:50%;" />
 
 ```c++
 MPI_Send(buffer, count, datatype, destination, tag, communicator);
@@ -1159,7 +1183,18 @@ MPI_Recv(address, count, datatype, source, tag, communicator, status)
 7. `status` 第七个参数是一个指针，指向一个结构：`MPI_Status Status`，通过它我们可以获得下面的三种主要信息
     - `Status.MPI_SOURCE`：发送进程的标号
     - `Status.MPI_TAG`：消息的标记号
-    - ﻿﻿`MPI_Get_count(MPI_Status* status, MPI_Datatype datatype, int* count)`：消息的长度，通过借助于 `MPI_Get_count` 函数，将 status 变量和数据类型传入，消息长度存放在 `count` 中
+    - `MPI_Get_count(MPI_Status* status, MPI_Datatype datatype, int* count)`：消息的长度，通过借助于 `MPI_Get_count` 函数，将 status 变量和数据类型传入，消息长度存放在 `count` 中
+
+
+
+**捆绑发送接收 - MPI_Sendrecv(...):** MPI 提供了 MPI_Sendrecv(捆鄉发送和接收)操作，可以在一条MPI语句中同时实现向其它进程的数据发送和从其它进程接收数据操作。
+
+- 把发送一个消息到一个目的地和从另一个进程接收一个消息合并到一个调用中，源和目的可以相同
+- 在语义上等同于一个发送操作和一个接收操作的结合
+- 但可以有效地避免由于单独书写发送或接收操作时，由于次序的错误而造成的死锁：因为**该操作由通信系统来实现，系统会优化通信次序从而有效地避免不合理的通信次序，最大限度避免死锁的产生**
+- 捆鄉发送接收操作是不对称的，即一个由捆鄉发送接收调用发出的消息可以被一个普通接收操作接收，一个捆绑发送接收调用可以接收一个普通发送操作发送的消息。
+- ﻿该操作执行一个阳塞的发送和接收，接收和发送使用同一个通信域。
+- ﻿发送缓冲区和接收缓冲区必须分开，可以是不同的数据长度和不同的数据类型。
 
 
 
@@ -1190,6 +1225,365 @@ MPI_Recv(address, count, datatype, source, tag, communicator, status)
 > ```
 
 ![image-20230917183315522](doc/pic/image-20230917183315522.png)
+
+
+
+#### 非阻塞型通信
+
+前面所讲的 `MPI_Send` 的通信模式为阻塞通信模式，在这种模式下，当一个阻塞通信正确返回后，可以得到下面的信息：
+
+- 通信操作已正确完成，即消息已成功发出或者接收
+- 通信占用的缓冲区可以使用，若是发送操作，则该缓冲区可以被其他操作更新，若是接收操作，那么该缓冲区中的数据已经完整，可以被正确使用。
+
+在阻塞通信中，对于接收进程，在接受消息时，要保证按照消息发送的顺序接受消息.例如进程 0 向进程 1 连续发送了 2 条消息，记为消息0 和消息1，消息0先发送，这时即便消息1 先到达了进程1，进程1 也无法接受消息1，必须要等到消息0 被接收之后，消息1 才可以被接收。
+
+与阻塞通信不同，**非**阻塞通信不必等到通信操作完成完成便可以返回，相对应的通信操作会交给特定的通信硬件去完成，在该通信硬件进行通信操作的同时，处理器可以同时进行计算。**通过通信与计算的重叠，可以大大提高程序执行的效率**。下面是非阻塞消息发送和接收的示意图：
+
+<img src="doc/pic/非阻塞消息.png" alt="非阻塞消息" style="zoom:50%;" />
+
+**非**阻塞型通讯就是会在**发送启动之后==立即==返回，数据会在后台进行继续发送**。
+
+
+
+**非阻塞通信模式:**
+
+在前面阻塞通信中，我们知道有 4 种基本的通信模式：
+
+- 标准通信模式
+- 缓存通信模式
+- 同步通信模式
+- 就绪通信模式
+
+非阻塞通信和这四种通信模式相结合，也有四种不同的模式。同时针对某些通信是在**一个循环中重复执行**的情况， MPI 又引入了重复非阻塞通信方式，以进一步提高效率。对于重复非阻塞通信，和四种通信模式相结合，又有四种不同的具体形式。下面是具体的通信模式：
+
+<table>
+  <tbody><tr>
+    <th colspan="2">通信模式</th>
+    <th>发送</th>
+    <th>接受</th>
+  </tr>
+  <tr>
+    <td colspan="2">标准通信模式</td>
+    <td>MPI_Isend</td>
+    <td>MPI_IRecv</td>
+  </tr>
+  <tr>
+    <td colspan="2">缓存通信模式</td>
+    <td>MPI_Ibsend</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td colspan="2">同步通信模式</td>
+    <td>MPI_Issend</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td colspan="2">就绪通信模式</td>
+    <td>MPI_Irsend</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td rowspan="4">重复非阻塞通信</td>
+    <td>标准通信模式</td>
+    <td>MPI_Send_init</td>
+    <td>MPI_Recv_init</td>
+  </tr>
+  <tr>
+    <td>缓存通信模式</td>
+    <td>MPI_Bsend_init</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>同步通信模式</td>
+    <td>MPI_Ssend_init</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>就绪通信模式</td>
+    <td>MPI_Rsend_init</td>
+    <td></td>
+  </tr>
+</tbody></table>
+
+同时需要注意的是只要消息信封相吻合，并且符合有序接受的语义，任何形式的发送和任何形式的接受都可以匹配。
+
+![接受匹配](doc/pic/接受匹配.png)
+
+
+
+**非阻塞通信函数：**
+
+在 API 中非阻塞型比阻塞型多了一个通讯句柄 `MPI_Request* request`，这个句柄中存储了一些用于非阻塞型通讯的信息：
+
+- 标准非阻塞发送操作
+
+    ```c
+    MPI_Isend(
+        void* buf,             // 发送缓冲区起始地址
+        int count,              // 发送数据个数
+        MPI_Datatype datatype,  // 发送数据的数据类型
+        int dest,               // 目标进程号
+        int tag,                // 消息标志
+        MPI_Comm comm,          // 通信域
+        MPI_Request * request   // 返回的非阻塞通信对象（比阻塞型多了这个）
+    )
+    ```
+
+
+
+
+- 标准非阻塞接收
+
+    ```c
+    MPI_Irecv(
+        void* buf,             // 接受缓冲区的起始地址
+        int count,              // 接受数据的最大个数
+        MPI_Datatype datatype,  // 数据类型
+        int source,             // 源进程标识
+        int tag,                // 消息标志
+        MPI_Comm comm,          // 通信域
+        MPI_Request* request   // 非阻塞通信对象（比阻塞型多了这个）
+    )
+    ```
+
+
+
+- 其余的三种通信模式和阻塞通信的函数形式类似，只是函数名称修改了一下，这里不做详细介绍。
+
+    ```c
+    // 同步通信模式
+    MPI_Issend(void * buf, int count, MPI_Datatype datatype, int dest, int tag,
+        MPI_Comm comm, MPI_Request * request)
+    
+    // 缓存通信模式
+    MPI_Ibsend(void * buf, int count, MPI_Datatype datatype, int dest, int tag,
+        MPI_Comm comm, MPI_Request * request)
+    
+    // 就绪通信模式
+    MPI_Irsend(void * buf, int count, MPI_Datatype datatype, int dest, int tag,
+        MPI_Comm comm, MPI_Request * request)
+    ```
+
+
+
+**非阻塞通信的完成:**
+
+由于非阻塞通信返回并不意味着该通信已经完成，因此 MPI 提供了一个非阻塞通信对象 -- `MPI_Request` 来查询通信的状态。通过结合 `MPI_Request` 和下面的一些函数，我们等待或者检测阻塞通信。
+
+对于单个非阻塞通信来说，可以使用下面两个函数来等待或者检测非阻塞通信：
+
+- `MPI_Wait` **会阻塞当前进程**，一直等到相应的非阻塞通信完成之后再返回
+
+    ```c++
+    MPI_Wait(
+        MPI_Request * request,      // 非阻塞通信对象
+        MPI_Status * status         // 返回的状态
+    );
+    ```
+
+    
+
+- `MPI_Test` 只是用来检测通信是否完成，它**会立即返回，不会阻塞当前进程**。如果通信完成，将 flag 置为 true，如果通信还没完成，则将 flag 置为 false
+
+    ```c++
+    MPI_Test(
+        MPI_Request * request,      // 非阻塞通信对象
+        int * flag,                 // 操作是否完成，完成 - true，未完成 - false
+        MPI_Status * status         // 返回的状态
+    );
+    ```
+
+
+
+对于多个非阻塞通信，MPI 也提供了相应的等待或者检测函数。`MPI_Waitany` 用来等待多个非阻塞对象中的任何一个非阻塞对象，`MPI_Waitall` 会等待所有的非阻塞通信完成，`MPI_Waitsome` 介于 `MPI_Waitany` 和 `MPI_Waitall`之间，只要有一个或者多个非阻塞通信完成，该调用就返回。
+
+```c
+MPI_Waitany(
+    int count,                      // 非阻塞通信对象的个数
+    MPI_Request * array_of_requests // 非阻塞通信对象数组
+    int * index,                    // 通信完成的对象在数组中的索引
+    MPI_Status * status             // 返回的状态
+);
+
+MPI_Waitall(
+    int count，                     // 非阻塞通信对象的个数
+    MPI_Request * array_of_requests // 费组摄通信对象数组
+    MPI_Status * array_of_status    // 状态数组
+);
+
+MPI_Waitsome(
+    int incount,                    // 非阻塞通信对象的个数
+    MPI_Request * array_of_requests // 非阻塞通信对象数组
+    int * outcount,                 // 已完成对象的数目
+    int * array_of_indices          // 已完成对象的索引数组
+    MPI_Status * array_of_statuses  // 已完成对象的状态数组
+);
+```
+
+
+
+`MPI_Testany` 用来检测非阻塞通信中是否有任何一个对象已经完成（若有多个非阻塞通信对象完成则从中任取一个），这里只是检测，不会阻塞进程。`MPI_Testall` 用来检测是否所有的非阻塞通信都已经完成，`MPI_Testsome`用来检测有非阻塞通信已经完成。
+
+```c
+MPI_Testany(
+    int count,                          // 非阻塞通信对象的个数
+    MPI_Request * array_of_requests,    // 非阻塞通信对象数组
+    int * index,                        // 非阻塞通信对象的索引
+    int * flag,                         // 是否有对象完成
+    MPI_Status * status                 // 返回的状态
+);
+
+MPI_Testall(
+    int count,                          // 非阻塞通信对象个数
+    MPI_Request * array_of_requests,    // 非阻塞通信对象数组
+    int * flag,                         // 所有非阻塞通信对象是否都完成
+    MPI_Status * array_of_statuses      // 状态数组
+);
+
+MPI_Testsome(
+    int incount,                        // 非阻塞通信对象的个数
+    MPI_Request * array_of_requests,    // 非阻塞通信对象数组
+    int * outcount,                     // 已完成对象的数目
+    int * array_of_indices,             // 已完成对象的索引数组
+    MPI_Status * array_of_statuses      // 已完成对象的状态数组
+)
+```
+
+
+
+**非阻塞通信取消：**
+
+可以使用 `MPI_Cancel` 来取消已经调用的非阻塞通信，该调用立即返回。取消调用并不意味着相应的通信一定会被取消，如果**非阻塞通信已经开始，那么它会正常完成**。如果取消操作时非阻塞通信还没有开始，那么可以取消该阻塞通信，释放通信占用的资源。对于非阻塞通信，即使执行了取消操作，也必须调用 `MPI_Wait` 或者 `MPI_Test` 来释放对象。下面是 `MPI_Cancel` 的函数原型：
+
+```c
+int MPI_Cancel(MPI_Request *request);
+```
+
+如果一个非阻塞通信已经被执行了取消操作，那么该通信中的 `MPI_Wait` 和 `MPI_Test` 将释放非阻塞通信对象，并且在返回结果 status 中指明该通信已经被取消。
+
+一个通信是否被取消，可以通过 `MPI_Test_cancelled` 来检查，如果返回结果 flag=1 则表明通信已被成功取消，负责说明通信还没有被取消。
+
+```c
+int MPI_Test_cancelled(
+    MPI_Status * status,    // 状态
+    int * flag              // 是否取消标志
+);
+```
+
+下面是使用 `MPI_Cancel` 的一个示例
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include "mpi.h"
+
+int main() {
+
+    int rank;
+    MPI_Request request;
+    MPI_Status status;
+    int value;
+    int has_canceled;
+    MPI_Init(NULL, NULL);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+    if(rank == 0) {
+        value = 10;
+        MPI_Send(&value,1, MPI_INT, 1, 99, MPI_COMM_WORLD);
+    } else if(rank == 1) {
+        MPI_Irecv(&value, 1, MPI_INT, 0, 99, MPI_COMM_WORLD, &request);
+        MPI_Cancel(&request);
+        MPI_Wait(&request, &status);
+        MPI_Test_cancelled(&status, &has_canceled);
+        printf("has_canceled is %d\n", has_canceled);
+        printf("value is %d\n", value);
+        if(has_canceled) {
+            MPI_Irecv(&value, 1, MPI_INT, 0, 99, MPI_COMM_WORLD, &request);
+        }
+        MPI_Wait(&request, &status);
+        printf("value is %d\n", value);
+    }
+
+    MPI_Finalize();
+}
+```
+
+
+
+**释放非阻塞通信对象**
+
+当能够确认一个非阻塞通信操作已经完成时，我们可以直接调用 `MPI_Request_free` 直接释放掉该对象所占的资源（非阻塞通信对象一定要被释放，通过`MPI_Wait` 和 `MPI_Test` 可以释放非阻塞通信对象，但是对于 `MPI_Test` 来说，只要通信完成之后调用才可以释放对象）。当调用 `MPI_Request_free` 操作之后，通信对象不会立即释放，而是要等到阻塞通信结束之后才会释放。下面是函数原型
+
+```c
+int MPI_Request_free(MPI_Request * request);
+```
+
+
+
+#### 消息到达后检查
+
+通过调用 `MPI_Probe` 和 `MPI_Iprobe`，我们可以在不实际接收消息的情况下检查消息是否到达，其中 `MPI_Probe` 用于阻塞通信，`MPI_Iprobe` 用于非阻塞通信。如果消息已经到达，那么通过调用 `MPI_Probe` 和 `MPI_Iprobe` 返回的 status 和通过 `MPI_Recv` 返回的 status 是一样的。通过返回的 status，我们可以获得消息的相关信息，例如消息的长度等。下面是函数的原型：
+
+```c
+int MPI_Probe(
+    int source,         // 源进程标识 或者 `MPI_ANY_SOURCE`
+    int tag,            // 特定的消息标识值 或者 `MPI_ANY_TAG`
+    MPI_Comm comm,      // 通信域
+    MPI_Status *status  // 返回的状态
+)
+
+int MPI_Iprobe(
+    int source,         // 源进程标识 或者 `MPI_ANY_SOURCE`
+    int tag,            // 特定的消息标识值 或者 `MPI_ANY_TAG`
+    MPI_Comm comm,      // 通信域
+    int * falg,         // 消息是否到达
+    MPI_Status * status // 返回的状态
+);
+```
+
+下面是使用 `MPI_Iprobe` 的一个示例，在接收时调用了5次 `MPI_Iprobe` 函数，主要是用来等待消息到达。
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include "mpi.h"
+
+int main() {
+    int rank;
+    MPI_Request request;
+    MPI_Status status;
+    int value;
+    int hava_message = 0;
+    MPI_Init(NULL, NULL);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+    if(rank == 0) {
+        value = 10;
+        MPI_Isend(&value, 1, MPI_INT, 1, 99, MPI_COMM_WORLD, &request);
+        MPI_Request_free(&request);
+    } else if(rank == 1) {
+        for(int i = 0; i < 5; i++) {
+            MPI_Iprobe(0, 99, MPI_COMM_WORLD, &hava_message, &status);
+            printf("hava_message is %d\n", hava_message);
+        }        
+        if(hava_message) {
+            int receive_count = 0;
+            MPI_Get_count(&status, MPI_INT, &receive_count);
+            printf("receive_count is %d\n", receive_count);
+        }
+    }
+
+    MPI_Finalize();
+}
+```
+
+
+
+
+
+
+
+
 
 
 
