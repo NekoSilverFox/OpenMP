@@ -27,6 +27,7 @@ int main(int argc, char* argv[])
     int end = gap * (rank + 1);
     int bound;
     int left, right;
+    
     // 迭代10次，计算时忽略了 0，n-1 行 和 0，n-1 列
     for(k = 0; k < 10; k++) {
 
