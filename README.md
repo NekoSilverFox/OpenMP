@@ -1711,7 +1711,7 @@ int main() {
       /* 1. 初始化通讯，但是此时并不会接收数据，只是初始化 */
         MPI_Recv_init(&value, 1, MPI_INT, 0, 99, MPI_COMM_WORLD, &request);
         for(int i = 0; i < 10; i++) {
-          	/* 2. 开始发送数据 */
+          	/* 2. 开始接收数据 */
             MPI_Start(&request);
           
           	/* 3. 完成通讯 */
@@ -1806,6 +1806,56 @@ int main() {
 
 
 
+
+
+#### 组收集
+
+`MPI_Gather` 是将数据收集到 root 进程，而 `MPI_Allgather` 相当于每个进程都作为 root 进程执行了一次 `MPI_Gather` 调用，即一个进程都收集到了其它所有进程的数据。下面是 `MPI_Gather` 和 `MPI_Allgather` 的函数原型：
+
+```c
+int MPI_Gather(
+    void * sendbuf,         // 发送缓冲区的起始地址
+    int  sendcount,         // 向每个进程发送的数据个数
+    MPI_Datatype sendtype,  // 发送数据类型
+    void * recvbuf,         // 接收缓冲区的起始地址
+    int recvcount,          // 从每个进程中单独接收数据的个数（并不是总个数）
+    MPI_Datatype recvtype,  // 接收数据的类型
+    int root,								// 接收数据的根（root）进程
+    MPI_Comm comm           // 通信域
+);
+
+int MPI_Allgather(
+    void * sendbuf,         // 发送缓冲区的起始地址
+    int  sendcount,         // 向每个进程发送的数据个数
+    MPI_Datatype sendtype,  // 发送数据类型
+    void * recvbuf,         // 接收缓冲区的起始地址
+    int recvcount,          // 接收数据的个数
+    MPI_Datatype recvtype,  // 接收数据的类型
+    MPI_Comm comm           // 通信域
+);
+```
+
+下面是 `MPI_Allgather` 的示意图
+
+![组收集](doc/pic/组收集.png)
+
+`MPI_Allgatherv` 和 `MPI_Allgather` 功能类似，只不过可以为每个进程指定发送和接受的数据个数以及接受缓冲区的起始地址，下面是 `MPI_Allgatherv` 的函数原型：
+
+```c
+int MPI_Allgather(
+    void * sendbuf,         
+    int  sendcount,        
+    MPI_Datatype sendtype,  
+    void * recvbuf,        
+    int* recvcounts,
+    int * displs,          
+    MPI_Datatype recvtype,  
+    MPI_Comm comm           
+);
+```
+
+
+
 #### 散发（Scatter）
 
 `MPI_Scatter` 是一对多的组通信调用，和广播不同的是，root 进程向各个进程发送的数据可以是不同的（**分块进行**），**并且他也会发给 root 进程一份**。它会向通过一个进程向同一个通信域的所有进程发送数据，分段发送，比如 int[100]，**每次**发送 N 个数据，向每个进程发送的区间为 int[rank\*N] ~ int[rank*N + N]
@@ -1878,8 +1928,6 @@ void scatter() {
     MPI_Finalize();
 }
 ```
-
-#### 收集
 
 
 
