@@ -1733,6 +1733,8 @@ int main() {
 
 前面提到的通信都是点到点通信，这里介绍组通信。MPI 组通信和点到点通信的一个重要区别就在于它需要一个**特定组内的所有进程**同时参加通信，而不是像点对点通信那样只涉及到发送方和接收方两个进程。组通信在**各个进程中的调用方式完全相同**，而不是像点对点通信那样在形式上有发送和接收的区别。
 
+MPI 组通信提供了计算功能的调用，通过这些调用可以对接收到的数据进行处理。当消息传递完毕后，组通信会用给定的计算操作对接收到的数据进行处理，处理完毕后将结果放入指定的接收缓冲区。
+
 **组通信一般实现三个功能：**
 
 - 通信：主要完成组内数据的传输
@@ -1744,17 +1746,140 @@ int main() {
 **组通讯可能：**
 
 - 一到多（Broadcast，Scatter）
+
+    ![组通信一对多](doc/pic/组通信一对多.png)
+
 - 多到一（Reduce，Gather）
+
+    ![组通信多对一](doc/pic/组通信多对一.png)
+
 - 多到多（Allreduce，Allgather）
-- 同步（Barrier）
+
+    ![组通信多对多](doc/pic/组通信多对多.png)
+
+- 同步（Barrier）。组通信提供了专门的调用以完成各个进程之间的同步，从而协调各个进程的进度和步伐。下面是 MPI 同步调用的示意图
+
+    ![组通信同步调用](doc/pic/组通信同步调用.png)
 
 
 
 #### 广播（Broadcast）
 
+`MPI_Bcast` 是**一对多**通信的典型例子，它可以将 root 进程中的**一条信息**广播到组内的其它进程，**同时包括它自身**。在执行调用时，组内所有进程（不管是 root 进程还是其它的进程）都使用同一个通信域 comm 和根标识 root，其执行结果是将根进程消息缓冲区的消息拷贝到其他的进程中去。下面是 `MPI_Bcast` 的函数原型：
+
+```c
+int MPI_Bcast(
+    void * buffer,          // 通信消息缓冲区的起始位置
+    int count,              // 广播 / 接收数据的个数
+    MPI_Datatype datatype,  // 广播 / 接收数据的数据类型
+    int root,               // 广播数据的根进程号
+    MPI_Comm comm           // 通信域
+);
+```
+
+对于广播调用，不论是广播消息的根进程，还是从根接收消息的其他进程，在调用形式上完全一致，即指明相同的根，相同的元素个数以及相同的数据类型。下面是广播前后各进程缓冲区中数据的变化
+
+![广播](doc/pic/广播.png)
+
+**示例：进程 0 初始化数据，同时广播到其他进程**
+
+```c++
+#include <stdio.h>
+#include <stdlib.h>
+#include "mpi.h"
+
+int main() {
+    int rank;
+    int value;
+    MPI_Init(NULL, NULL);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    if(rank == 0) {
+        value = 10;
+    }
+
+    // 将进程 0 的数据广播到其他进程中
+    MPI_Bcast(&value, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    printf("Process %d value is %d\n", rank, value);
+    MPI_Finalize();
+}
+```
 
 
 
+#### 散发（Scatter）
+
+`MPI_Scatter` 是一对多的组通信调用，和广播不同的是，root 进程向各个进程发送的数据可以是不同的（**分块进行**），**并且他也会发给 root 进程一份**。它会向通过一个进程向同一个通信域的所有进程发送数据，分段发送，比如 int[100]，**每次**发送 N 个数据，向每个进程发送的区间为 int[rank\*N] ~ int[rank*N + N]
+
+**`MPI_Scatter` 和 `MPI_Gather` 的效果正好相反，两者互为逆操作。**下面是 `MPI_Scatter` 的函数原型
+
+```c
+int MPI_scatter(
+    void * sendbuf,         // 发送缓冲区的起始地址
+    int sendcount,          // 发送数据的个数
+    MPI_Datatype sendtype,  // 发送数据类型
+    void * recvbuf,         // 接收缓冲区的起始地址
+    int recvcount,          // 接收数据的个数
+    MPI_Datatype recvtype,  // 接收数据的类型
+    int root,               // 根进程的编号
+    MPI_Comm comm           // 通信域
+);
+```
+
+下面是 scatter 的示意图：
+
+![散发](doc/pic/散发.png)
+
+`MPI_Scatterv` 和 `MPI_Gatherv` 也是一对互逆操作，下面是 `MPI_Scatterv` 的函数原型
+
+```c
+int MPI_scatter(
+    void * sendbuf,         // 发送缓冲区的起始地址
+    int* sendcounts,        // 向每个进程发送的数据个数
+    int* displs,            // 发送数据的偏移
+    MPI_Datatype sendtype,  // 发送数据类型
+    void * recvbuf,         // 接收缓冲区的起始地址
+    int recvcount,          // 接收数据的个数
+    MPI_Datatype recvtype,  // 接收数据的类型
+    int root,               // 根进程的编号
+    MPI_Comm comm           // 通信域
+);
+```
+
+下面是使用 `MPI_Scatter` 的一个示例：
+
+```c
+void scatter() {
+    int size;
+    int rank;
+    int n = 10;
+    int * send_array;
+    int recv_array[n];
+
+    int i, j;
+
+    MPI_Init(NULL, NULL);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+    if(rank == 0) {
+        send_array = (int *)malloc(sizeof(int) * n * size);
+        for(i = 0; i < n * size; i++) {
+            send_array[i] = i;
+        }
+    }
+    MPI_Scatter(send_array, n, MPI_INT, recv_array, n, MPI_INT, 0, MPI_COMM_WORLD);
+    for(i = 0; i < size; i++) {
+        MPI_Barrier(MPI_COMM_WORLD);
+        if(rank == i) {
+            for(j = 0;j < n; j++) {
+                printf("Process %d recv[%d] is %d\n", rank, j, recv_array[j]);
+            }            
+        }
+    }
+    MPI_Finalize();
+}
+```
+
+#### 收集
 
 
 

@@ -13,7 +13,11 @@
         "complex": "cpp",
         "functional": "cpp",
         "utility": "cpp",
-        "__locale": "cpp"
+        "__locale": "cpp",
+        "span": "cpp",
+        "string": "cpp",
+        "string_view": "cpp",
+        "vector": "cpp"
     },
     "cmake.sourceDirectory": "/Users/fox/雪狸的文件/Programma/OpenMP/MPI/01_macos_mpi_test"
 }
