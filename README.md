@@ -1931,6 +1931,73 @@ void scatter() {
 
 
 
+#### 规约（Reduce）
+
+`MPI_Reduce` 用来将组内每个进程输入缓冲区中的数据按给定的操作 op 进行预案算，然后将结果返回到序号为 root 的接收缓冲区中。类似于 OpenMP 中的 `reduction`，多个简称的结果最终会归并到一起。下面是 `MPI_Reduce` 的示意图：
+
+<img src="doc/pic/规约.png" alt="规约" style="zoom:50%;" />
+
+下面是 `MPI_Reduce` 的函数原型
+
+```c
+int MPI_Reduce(
+    void * sendbuf,         // 发送缓冲区的起始地址      
+    void * recvbuf,         // 接收缓冲区的起始地址
+    int count,              // 发送/接收 消息的个数
+    MPI_Datatype datatype,  // 发送消息的数据类型
+    MPI_Op op,              // 规约操作符
+    int root,               // 根进程序列号
+    MPI_Comm comm           // 通信域
+);
+```
+
+MPI 预定义了一些规约操作，如下表所示：
+
+| 操作       | 含义             |
+| :--------- | :--------------- |
+| MPI_MAX    | 最大值           |
+| MPI_MIN    | 最小值           |
+| MPI_SUM    | 求和             |
+| MPI_PROD   | 求积             |
+| MPI_LAND   | 逻辑与           |
+| MPI_BAND   | 按位与           |
+| MPI_LOR    | 逻辑或           |
+| MPI_BOR    | 按位或           |
+| MPI_LXOR   | 逻辑异或         |
+| MPI_BXOR   | 按位异或         |
+| MPI_MAXLOC | 最大值且相应位置 |
+| MPI_MINLOC | 最小值且相应位置 |
+
+下面是使用 `MPI_Reduce` 的一个示例：
+
+```c
+void reduce() {
+    int size;
+    int rank;
+    int n = 2;
+    int send_array[n];
+    int recv_array[n];
+    int i, j;
+
+    MPI_Init(NULL, NULL);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+    for(i = 0; i < n ; i++) {
+        send_array[i] = i + n * (rank + 1);
+    }
+    MPI_Reduce(send_array, recv_array, n, MPI_INT,MPI_SUM, 0, MPI_COMM_WORLD);
+    if(rank == 0) {
+        for(j = 0;j < n; j++) {
+            printf("Process %d recv[%d] is %d\n", rank, j, recv_array[j]);
+        }            
+    }
+
+    MPI_Finalize();
+}
+```
+
+
+
 # 锁 🔐
 
 ## 死锁
