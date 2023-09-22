@@ -1865,7 +1865,7 @@ int MPI_Allgather(
 ```c
 int MPI_scatter(
     void * sendbuf,         // 发送缓冲区的起始地址
-    int sendcount,          // 发送数据的个数
+    int sendcount,          // 向每个进程发送的数据个数
     MPI_Datatype sendtype,  // 发送数据类型
     void * recvbuf,         // 接收缓冲区的起始地址
     int recvcount,          // 接收数据的个数
@@ -1878,22 +1878,6 @@ int MPI_scatter(
 下面是 scatter 的示意图：
 
 ![散发](doc/pic/散发.png)
-
-`MPI_Scatterv` 和 `MPI_Gatherv` 也是一对互逆操作，下面是 `MPI_Scatterv` 的函数原型
-
-```c
-int MPI_scatter(
-    void * sendbuf,         // 发送缓冲区的起始地址
-    int* sendcounts,        // 向每个进程发送的数据个数
-    int* displs,            // 发送数据的偏移
-    MPI_Datatype sendtype,  // 发送数据类型
-    void * recvbuf,         // 接收缓冲区的起始地址
-    int recvcount,          // 接收数据的个数
-    MPI_Datatype recvtype,  // 接收数据的类型
-    int root,               // 根进程的编号
-    MPI_Comm comm           // 通信域
-);
-```
 
 下面是使用 `MPI_Scatter` 的一个示例：
 
@@ -1998,9 +1982,72 @@ void reduce() {
 
 
 
-还有一个函数是 `MPI_Allreduce()`，其原理和所有进程一样。只是结束之后，所有的进程都获得了归并过后的结果（拥有一样的值）。
+#### 组规约
+
+组规约 `MPI_Allreduce` 相当于组中每个进程作为 ROOT 进行了一次规约操作，即每个进程都有规约的结果。下面是 `MPI_Allreduce` 的函数原型
+
+```c++
+int MPI_Reduce(
+    void * sendbuf,         // 发送缓冲区的起始地址      
+    void * recvbuf,         // 接收缓冲区的起始地址
+    int count,              // 发送/接收 消息的个数
+    MPI_Datatype datatype,  // 发送消息的数据类型
+    MPI_Op op,              // 规约操作符
+    MPI_Comm comm           // 通信域
+);
+```
+
+
+
+其原理和规约一样。只是结束之后，所有的进程都获得了归并过后的结果（拥有一样的值）。
 
 ![iShot_2023-09-21_21.18.05](doc/pic/iShot_2023-09-21_21.18.05.jpg)
+
+
+
+#### 规约并散发
+
+`MPI_Reduce_scatter` 会将规约结果分散到组内的所有进程中去。在 `MPI_Reduce_scatter` 中，发送数据的长度要大于接收数据的长度，这样才可以把规约的一部分结果散射到各个进程中。该函数的参数中有个 `recvcounts` 数组，用来记录每个进程结束数据的数量，这个数组元素的和就是发送数据的长度。下面是示意图
+
+![iShot_2023-09-21_21.47.34](doc/pic/iShot_2023-09-21_21.47.34.jpg)
+
+下面是函数原型：
+
+```c
+int MPI_Reduce(
+    void * sendbuf,         // 发送缓冲区的起始地址      
+    void * recvbuf,         // 接收缓冲区的起始地址
+    int* recvcounts,        // 接受数据的个数（数组）
+    MPI_Datatype datatype,  // 发送消息的数据类型
+    MPI_Op op,              // 规约操作符
+    MPI_Comm comm           // 通信域
+);
+```
+
+
+
+#### 扫描（Scan）
+
+可以将扫描看做是一种特殊的规约，即每个进程都对排在它前面的进程进行规约操作。 `MPI_Scan` 的调用结果是，对于每一个进程i，它对进程 0,...,i 的发送缓冲区的数据进行指定的规约操作，结果存入进程 i 的接收缓冲区。下面是 `MPI_Scan` 的函数原型：
+
+```c
+int MPI_Scan(
+    void * sendbuf,         // 发送缓冲区的起始地址      
+    void * recvbuf,         // 接收缓冲区的起始地址
+    int  count,             // 输入缓冲区中元素的个数
+    MPI_Datatype datatype,  // 发送消息的数据类型
+    MPI_Op op,              // 规约操作符
+    MPI_Comm comm           // 通信域
+);
+```
+
+
+
+#### 规约操作对比
+
+![规约操作对比](doc/pic/规约操作对比.jpeg)
+
+
 
 
 
