@@ -2049,6 +2049,73 @@ int MPI_Scan(
 
 
 
+#### 全互换（AllToal）
+
+`MPI_Alltoall` 是组内进程完全交换，每个进程都向其它所有的进程发送消息，同时每一个进程都从其他所有的进程接收消息。它与 `MPI_Allgather` 不同的是:`MPI_Allgather` 接收完消息后每个进程接收缓冲区的数据是完全相同的，但是 `MPI_Alltoall` 接受完消息后接收缓冲区的数据一般是不同的，下面是 `MPI_Alltoall` 的示意图，如果将进程和对应的数据看做是一个矩阵的话，**`MPI_Alltoall` 就相当于把矩阵的行列置换了一下（矩阵转置）**：
+
+![img](http://parallel.zhangjikai.com/images/%E5%85%A8%E4%BA%92%E6%8D%A2.png)
+
+下面是 `MPI_Alltoall` 和 `MPI_Alltoallv` 的函数原型：
+
+```c
+int MPI_Alltoall(
+    void * sendbuf,         
+    int  sendcount,         
+    MPI_Datatype sendtype,  
+    void * recvbuf,         
+    int recvcount,          
+    MPI_Datatype recvtype,  
+    MPI_Comm comm           
+);
+
+int MPI_Alltoallv(
+    void * sendbuf,         
+    int  sendcount,        
+    MPI_Datatype sendtype,  
+    void * recvbuf,        
+    int* recvcounts,
+    int * displs,          
+    MPI_Datatype recvtype,  
+    MPI_Comm comm           
+);
+```
+
+下面是使用 `MPI_Alltoall` 的一个示例：
+
+```c
+void all_to_all() {
+    int size;
+    int rank;
+    int n = 2;
+    int i;
+
+    MPI_Init(NULL, NULL);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+    int send_array[n * size];
+    int recv_array[n * size];
+
+    for(i = 0; i < n * size; i++) {
+        send_array[i] = (rank+1) * (i + 1);
+    }
+    MPI_Alltoall(send_array, n, MPI_INT, recv_array, n, MPI_INT, MPI_COMM_WORLD);
+    for(i = 0; i < size; i++) {
+        MPI_Barrier(MPI_COMM_WORLD);
+        if(rank == i) {
+            for(j = 0;j < n * size; j++) {
+                printf("Process %d recv[%d] is %d\n", rank, j, recv_array[j]);
+            }            
+        }
+    }
+    MPI_Finalize();
+}
+```
+
+
+
+
+
 
 
 # 锁 🔐
