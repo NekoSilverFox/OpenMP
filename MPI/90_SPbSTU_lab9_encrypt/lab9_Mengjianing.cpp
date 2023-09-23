@@ -22,8 +22,8 @@
 #include <ctime>
 
 #define DEBUG               1
-const std::string str_dic = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ,.";
-const int NUM_RANDOM_CHAR = str_dic.size(); //26 + 26 + 10 + 3; // A~Z + a~z + 0~9 + space,.
+const char str_dic[]      = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ,.";
+const int NUM_RANDOM_CHAR = strlen(str_dic); //26 + 26 + 10 + 3; // A~Z + a~z + 0~9 + space,.
 const int ASCII_START     = 32;
 const int ASCII_END       = 127;
 const int TAG_KEY         = 0;
@@ -72,30 +72,35 @@ int main(int argv, char* argc[])
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
     /* Boardcast Словарь для шифрования */
-    std::string key_dic;
-    char* arrc_key_dic = new char[NUM_RANDOM_CHAR + 1];
+    char* key_dic = new char[NUM_RANDOM_CHAR];
     if (0 == rank)
     {
-        std::cout << "==================== lab9 ====================\n";
-
-        key_dic = get_today_key_dic();
-        arrc_key_dic = key_dic.data();
-
+        std::cout << "===================================== lab9 =====================================\n";
+        get_today_key_dic().copy(key_dic, NUM_RANDOM_CHAR);
         std::cout << "MPI size = " << size << "\n"
-                  << "str_dic = " << str_dic << "\tlength = " << str_dic.size() << "\n"
-                  << "key_dic = " << key_dic << "\tlength = " << key_dic.size() << "\n"
-                  << "==============================================\n";
+                  << "str_dic = " << str_dic << "\tlength = " << strlen(str_dic) << "\n"
+                  << "key_dic = " << key_dic << "\tlength = " << strlen(str_dic) << "\n"
+                  << "================================================================================\n";
     }
-    MPI_Bcast(arrc_key_dic, NUM_RANDOM_CHAR + 1, MPI_CHAR, 0, MPI_COMM_WORLD);
-    key_dic = std::string(arrc_key_dic);
-    std::cout << "key_dic in rank " << rank << " = " << key_dic << "\tlength = " << key_dic.size() << "\n";
+    MPI_Bcast(key_dic, NUM_RANDOM_CHAR, MPI_CHAR, 0, MPI_COMM_WORLD);
+    std::cout << "key_dic in rank " << rank << " = " << key_dic << "\tlength = " << strlen(str_dic) << "\n";
     
 #if DEBUG
     MPI_Barrier(MPI_COMM_WORLD);
 #endif
 
-    /* Передача строки для шифрования, метод передачи информации «точка-точка» */
-    std::string str_source = "ABCDE89o ,.";
+    /* Передача строки для шифрования, метод передачи информации «точка-точка», root - rank 0 */
+    char str_source[] = "ABCDE89o ,.";
+    // char* 
+    // if (0 == rank)
+    // {
+    //     if (0 == str_source.size() % size) 
+    //     {
+            
+    //     }
+    // }
+    std::cout << strlen(str_source) << "\n";
+
 
     // std::cout << (int)11/3 << "\t" << 11 % 3 << "\n";
 
