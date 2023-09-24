@@ -81,7 +81,7 @@ int main(int argv, char* argc[])
     std::string key_dic = get_today_key_dic(rank);
     
     /* SEND строки для шифрования, метод передачи информации «точка-точка», root - rank 0 */
-    std::string local_arr_char;
+    char* local_arr_char;
     int local_length;
     MPI_Request request;
 
@@ -95,7 +95,8 @@ int main(int argv, char* argc[])
         if (0 == strlen(str_source) % size) 
         {
             local_length = strlen(str_source) / size;
-            strncpy(&local_arr_char[0], str_source, local_length);
+            local_arr_char = new char[local_length];
+            strncpy(local_arr_char, str_source, local_length);
 
             for (int i = 1; i < size; i++)
             {
@@ -114,7 +115,8 @@ int main(int argv, char* argc[])
             }
 
             local_length += strlen(str_source) % size;
-            strncpy(&local_arr_char[0], str_source, local_length);
+            local_arr_char = new char[local_length];
+            strncpy(local_arr_char, str_source, local_length);
         }
     }
     else
@@ -122,7 +124,8 @@ int main(int argv, char* argc[])
         MPI_Irecv(&local_length, 1, MPI_INT, RANK_ROOT, TAG_MSG_LENGTH, MPI_COMM_WORLD, &request);
         MPI_Wait(&request, &status);
 
-        MPI_Irecv(&local_arr_char[0], local_length, MPI_CHAR, RANK_ROOT, TAG_MSG, MPI_COMM_WORLD, &request);
+        local_arr_char = new char[local_length];
+        MPI_Irecv(local_arr_char, local_length, MPI_CHAR, RANK_ROOT, TAG_MSG, MPI_COMM_WORLD, &request);
         MPI_Wait(&request, &status);
     }
 
@@ -133,13 +136,13 @@ int main(int argv, char* argc[])
 #endif
 
     /* Шифрование строк с помощью картографических словарей */
-    for (int i = 0; i < local_length; i++)
-    {
-        local_arr_char[i] = key_dic.at(key_dic.find(local_arr_char[i]));
-    }
+    // for (int i = 0; i < local_length; i++)
+    // {
+    //     local_arr_char[i] = key_dic.at(key_dic.find(local_arr_char[i]));
+    // }
 
     /* Результаты возврата, метод передачи информации «точка-точка» */
-    std::cout << "String after coding in rank " << rank << " is " << local_arr_char << "\tlength = " << strlen(local_arr_char) << "\n";
+    // std::cout << "String after coding in rank " << rank << " is " << local_arr_char << "\tlength = " << strlen(local_arr_char) << "\n";
     
 
 
