@@ -91,15 +91,15 @@ int main(int argv, char* argc[])
 
     /* Передача строки для шифрования, метод передачи информации «точка-точка», root - rank 0 */
     char str_source[] = "ABCDE89o ,.";
-    // char* 
-    // if (0 == rank)
-    // {
-    //     if (0 == str_source.size() % size) 
-    //     {
-            
-    //     }
-    // }
-    std::cout << strlen(str_source) << "\n";
+    char* arr_local_char;
+    int local_length;
+    if (0 == rank)
+    {
+        if (0 == str_source.size() % size) 
+        {
+            local_length = 0;
+        }
+    }
 
 
     // std::cout << (int)11/3 << "\t" << 11 % 3 << "\n";
