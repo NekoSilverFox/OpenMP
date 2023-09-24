@@ -22,8 +22,8 @@
 #include <ctime>
 
 #define DEBUG               1
-const char str_dic[]      = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ,.";
-const int NUM_RANDOM_CHAR = strlen(str_dic); //26 + 26 + 10 + 3; // A~Z + a~z + 0~9 + space,.
+const std::string str_dic = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ,.";
+const int NUM_RANDOM_CHAR = str_dic.size(); //26 + 26 + 10 + 3; // A~Z + a~z + 0~9 + space,.
 const int ASCII_START     = 32;
 const int ASCII_END       = 127;
 const int TAG_MSG_LENGTH  = 0;
@@ -70,7 +70,7 @@ std::string get_today_key_dic(const int rank)
 
 int main(int argv, char* argc[])
 {
-    char str_source[] = "ABCDE89o ,.";
+    char str_source[] = "ABCDE89o ,..";
     int size, rank;
     MPI_Status status;
     MPI_Init(&argv, &argc);
@@ -130,21 +130,20 @@ int main(int argv, char* argc[])
     }
 
 #if DEBUG
-    std::cout << "str_dic in rank " << rank << " = " << str_dic << "\tlength = " << strlen(str_dic) << "\n";
-    std::cout << "key_dic in rank " << rank << " = " << key_dic << "\tlength = " << strlen(str_dic) << "\n";
-    std::cout << "Local msg in rank " << rank << " is `" << local_arr_char << "` length is " << local_length << "\n\n";
+    std::cout << "str_dic in rank " << rank << " = " << str_dic << "\tlength = " << str_dic.size() << "\n";
+    std::cout << "key_dic in rank " << rank << " = " << key_dic << "\tlength = " << key_dic.size() << "\n";
+    std::cout << "Local msg in rank " << rank << " is\t\t\t" << local_arr_char << "\tlength is " << local_length << "\n";
 #endif
 
     /* Шифрование строк с помощью картографических словарей */
-    // for (int i = 0; i < local_length; i++)
-    // {
-    //     local_arr_char[i] = key_dic.at(key_dic.find(local_arr_char[i]));
-    // }
+    for (int i = 0; i < local_length; i++)
+    {
+        local_arr_char[i] = key_dic.at(str_dic.find(local_arr_char[i]));
+    }
 
     /* Результаты возврата, метод передачи информации «точка-точка» */
-    // std::cout << "String after coding in rank " << rank << " is " << local_arr_char << "\tlength = " << strlen(local_arr_char) << "\n";
+    std::cout << "Local msg after coding in rank " << rank << " is\t" << local_arr_char << "\tlength = " << strlen(local_arr_char) << "\n\n";
     
-
 
     MPI_Finalize();
 }
