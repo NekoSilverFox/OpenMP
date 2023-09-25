@@ -17,7 +17,6 @@
  */
 
 #include <iostream>
-#include <vector>
 #include <mpi.h>
 #include <ctime>
 

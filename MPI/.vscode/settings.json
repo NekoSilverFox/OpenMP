@@ -71,7 +71,8 @@
         "queue": "cpp",
         "set": "cpp",
         "stack": "cpp",
-        "format": "cpp"
+        "format": "cpp",
+        "iomanip": "cpp"
     },
     "cmake.sourceDirectory": "/Users/fox/雪狸的文件/Programma/OpenMP/MPI/01_macos_mpi_test"
 }

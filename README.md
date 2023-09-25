@@ -1814,7 +1814,7 @@ int main() {
 
 
 
-#### 组收集
+#### 组收集 (Gather)
 
 `MPI_Gather` 是将数据收集到 root 进程，而 `MPI_Allgather` 相当于每个进程都作为 root 进程执行了一次 `MPI_Gather` 调用，即一个进程都收集到了其它所有进程的数据。下面是 `MPI_Gather` 和 `MPI_Allgather` 的函数原型：
 
