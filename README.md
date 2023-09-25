@@ -1304,6 +1304,12 @@ MPI_Recv(address, count, datatype, source, tag, communicator, status)
     <td></td>
   </tr>
 </tbody></table>
+**他们的区分点是：**
+
+- 是否需要对发送的数据进行缓存
+- 是否只有当接收调用执行后才可以执行发送操作
+- 什么时候发送调用可以正确的返回
+- 发送调用正确返回是否意味着发送已经完成
 
 同时需要注意的是只要消息信封相吻合，并且符合有序接受的语义，任何形式的发送和任何形式的接受都可以匹配。
 
@@ -1313,7 +1319,7 @@ MPI_Recv(address, count, datatype, source, tag, communicator, status)
 
 **非阻塞通信函数：**
 
-在 API 中非阻塞型比阻塞型多了一个通讯句柄 `MPI_Request* request`，这个句柄中存储了一些用于非阻塞型通讯的信息：
+在 API 中非阻塞型比阻塞型多了一个通讯句柄 `MPI_Request* request`，这个句柄中存储了一些用于非阻塞型通讯的信息，用于 `MPI_Wait(...)` 和 `MPI_Test(...)`
 
 - 标准非阻塞发送操作
 
@@ -1512,7 +1518,7 @@ int main() {
 
 **释放非阻塞通信对象**
 
-当能够确认一个非阻塞通信操作已经完成时，我们可以直接调用 `MPI_Request_free` 直接释放掉该对象所占的资源（非阻塞通信对象一定要被释放，通过`MPI_Wait` 和 `MPI_Test` 可以释放非阻塞通信对象，但是对于 `MPI_Test` 来说，只要通信完成之后调用才可以释放对象）。当调用 `MPI_Request_free` 操作之后，通信对象不会立即释放，而是要等到阻塞通信结束之后才会释放。下面是函数原型
+当能够确认一个非阻塞通信操作已经完成时，我们可以直接调用 `MPI_Request_free` 直接释放掉该对象所占的资源（非阻塞通信对象一定要被释放，通过`MPI_Wait` 和 `MPI_Test` 可以释放非阻塞通信对象，但是**对于 `MPI_Test` 来说**，只要通信完成之后调用才可以释放对象）。当调用 `MPI_Request_free` 操作之后，通信对象不会立即释放，而是要等到阻塞通信结束之后才会释放。下面是函数原型
 
 ```c
 int MPI_Request_free(MPI_Request * request);
@@ -2114,7 +2120,117 @@ void all_to_all() {
 
 
 
+#### 进程同步
 
+`MPI_Barrier` 会阻塞进程，直到组中的所有成员都调用了它，组中的进程才会往下执行，在上面的代码中我们使用 `MPI_Barrier` 来顺序输出每个进程的数据，
+
+```c
+for(i = 0; i < size; i++) {
+    MPI_Barrier(MPI_COMM_WORLD);  // 所有进程都会在此语句处等待到最后一个进程执行至此
+    if(rank == i) {
+        for(j = 0;j < n * size; j++) {
+            printf("Process %d recv[%d] is %d\n", rank, j, recv_array[j]);
+        }            
+    }
+}
+```
+
+这里解释一下为什么下面的代码可以做到顺序输出。我们直到 `MPI_Barrier` 的作用是阻塞进程，直到所有进程都到达这个点。当第一次循环时，各个进程在 `MPI_Barrier` 的地方首先同步一下，然后继续往下执行，进程 1, 2, 3 直接跳过开始第二次循环，而进程 0 开始输出自己的数据。而进程 1, 2, 3 又会在 `MPI_Barrier` 处等待，直到进程 0 输出完数据，也到达第二次循环的同步点。此时所有的进程又开始往下执行。不过和上次不同的是，这次是进程 0, 2, 3 进入第三次循环，而进程 1 开始输出数据。进程 0, 2, 3 又会在 `MPI_Barrier` 处等待进程 1 。重复上面的过程，我们就可以顺序输出每个进程的数据。
+
+下面是 `MPI_Barrier` 的函数原型：
+
+```c
+int MPI_Barrier(
+    MPI_Comm comm
+);
+```
+
+
+
+#### 最大值和最小值
+
+`MPI_MINLOC` 用来计算全局最小值和最小值所在进程的索引，`MPI_MAXLOC` 用来计算全局最大值和最大值的索引。这里我们可以看到得到的结果是值和索引，所以需要定义一个 struct 来存储这两个值，下面是一个示例：
+
+```c
+struct {
+    int value;
+    int rank;
+} in[n], out[n];
+```
+
+rank的类型一定是整形，但是 value 的值可以不是整形，因此在 MPI 里定义几种类型用来指定 value 是什么类型的值，如下所示：
+
+| 名称                | 描述                 |
+| :------------------ | :------------------- |
+| MPI_FLOAT_INT       | 浮点型和整形         |
+| MPI_DOUBLE_INT      | 双精度和整形         |
+| MPI_LONG_INT        | 长整形和整形         |
+| MPI_2INT            | 整型值对             |
+| MPI_SHORT_INT       | 短整形和整形         |
+| MPI_LONG_DOUBLE_INT | 长双精度浮点型和整型 |
+
+下面是一个使用示例：
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include "mpi.h"
+
+void max() {
+    int n = 10;
+    int max_value = 100;
+    struct {
+        int value;
+        int rank;
+    } in[n], out[n];
+    int rank;
+    int size;
+    int i, j;
+
+    MPI_Init(NULL, NULL);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    srand(time(NULL) + rank);
+    for(i = 0; i < n; i++) {
+       in[i].value = rand() % max_value;
+       in[i].rank = rank;
+    }
+    for(j = 0; j < size; j++) {
+        MPI_Barrier(MPI_COMM_WORLD);
+        if(j == rank) {
+            for(i = 0; i < n; i++) {
+                printf("thread %d in[%d] is %d\n", j, i, in[i].value);
+            }
+        }
+    }
+    MPI_Reduce(in, out, n, MPI_2INT, MPI_MAXLOC, 0, MPI_COMM_WORLD);
+    if(rank == 0) {
+        for(i = 0; i < n; i++) {
+            printf("max[%d] in thread %d and value is %d\n", i, out[i].rank, out[i].value);
+        }
+    }
+    MPI_Finalize();
+}
+
+int main() {
+    max();
+}
+```
+
+###
+
+## 并行效率分析
+
+![iShot_2023-09-22_14.04.53](doc/pic/iShot_2023-09-22_14.04.53.jpg)
+
+**速度降低的原因：**
+
+- 负载不均衡
+    - 由于进程间计算任务量不一致，导致并行效率不高，甚至很差。
+- 并行粒度的选择
+    - ﻿由于进程间计算任务量不一致，导致并行效率不高，甚至很差。
+    - ﻿根据实际情况选择合适的并行粒度
 
 
 
