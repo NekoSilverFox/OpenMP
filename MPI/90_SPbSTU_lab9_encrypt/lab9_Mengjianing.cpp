@@ -68,12 +68,17 @@ std::string get_today_key_dic(const int rank)
     return key_dic;
 }
 
-int main(int argv, char* argc[])
+int main(int argc, char* argv[])
 {
-    char str_source[] = "ABCDE89o ,..";
+    if (2 != argc)
+    {
+        std::cerr << "[ERROR] The program does not have enough parameters: parameter 1 should be string.\n";
+        return -1;
+    }
+
     int size, rank;
     MPI_Status status;
-    MPI_Init(&argv, &argc);
+    MPI_Init(&argc, &argv);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
@@ -87,6 +92,9 @@ int main(int argv, char* argc[])
 
     if (0 == rank)
     {
+        // char str_source[] = "ABCDE89o ,.";
+        char* str_source = argv[1];
+
         std::cout << "======================= lab9 | Мэн Цзянин 5140904/30202 =======================\n"
                   << "MPI size = " << size << "\n"
                   << "str_source = " << str_source << "\tlength = " << strlen(str_source) << "\n"
@@ -132,7 +140,7 @@ int main(int argv, char* argc[])
 #if DEBUG
     std::cout << "str_dic in rank " << rank << " = " << str_dic << "\tlength = " << str_dic.size() << "\n";
     std::cout << "key_dic in rank " << rank << " = " << key_dic << "\tlength = " << key_dic.size() << "\n";
-    std::cout << "Local msg in rank " << rank << " is\t\t\t" << local_arr_char << "\tlength is " << local_length << "\n";
+    std::cout << "Local msg in rank " << rank << " is\t\t\t`" << local_arr_char << "`\tlength = " << local_length << "\n";
 #endif
 
     /* Шифрование строк с помощью картографических словарей */
@@ -142,8 +150,35 @@ int main(int argv, char* argc[])
     }
 
     /* Результаты возврата, метод передачи информации «точка-точка» */
-    std::cout << "Local msg after coding in rank " << rank << " is\t" << local_arr_char << "\tlength = " << strlen(local_arr_char) << "\n\n";
-    
+#if DEBUG
+    std::cout << "Local msg after coding in rank " << rank << " is\t`" << local_arr_char << "`\tlength = " << strlen(local_arr_char) << "\n\n";
+#endif
+
+    std::string res_ciphertext = "";
+    if (0 != rank)
+    {
+        MPI_Isend(&local_length, 1, MPI_INT, RANK_ROOT, TAG_MSG_LENGTH, MPI_COMM_WORLD, &request);
+        MPI_Isend(local_arr_char, local_length,  MPI_CHAR, RANK_ROOT, TAG_MSG, MPI_COMM_WORLD, &request);
+    }
+    else
+    {
+        int length_recv;
+        char* local_ciphertext;
+        res_ciphertext.append(local_arr_char);
+
+        for (int i = 1; i < size; i++)
+        {
+            MPI_Irecv(&length_recv, 1, MPI_INT, i, TAG_MSG_LENGTH, MPI_COMM_WORLD, &request);
+            MPI_Wait(&request, &status);
+
+            local_ciphertext = new char[length_recv];
+            MPI_Irecv(local_ciphertext, length_recv, MPI_CHAR, i, TAG_MSG, MPI_COMM_WORLD, &request);
+            MPI_Wait(&request, &status);
+            res_ciphertext.append(local_ciphertext);
+        }
+
+        std::cout << "\n\n################### RESULT ciphertext: `" << res_ciphertext << "`\tstrlen(res_ciphertext) = " << res_ciphertext.size() << "\n";
+    }
 
     MPI_Finalize();
 }
