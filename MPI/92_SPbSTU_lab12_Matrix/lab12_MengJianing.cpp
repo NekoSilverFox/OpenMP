@@ -160,13 +160,14 @@ int main(int argc, char* argv[])
     if (0 == rank)
     {
         /* Get file names for per process */
-        length_vector_file_name = strlen(SOURCE_VECTOR_FILE) + 1;
+        length_vector_file_name = strlen(SOURCE_VECTOR_FILE);
         vector_file_name = new char[length_vector_file_name];
         strcpy(vector_file_name, SOURCE_VECTOR_FILE);
 
-        length_matrix_file_name = strlen(SOURCE_MATRIX_FILE) + 1;
+        length_matrix_file_name = strlen(SOURCE_MATRIX_FILE);
         matrix_file_name = new char(length_matrix_file_name);
         strcpy(matrix_file_name, SOURCE_MATRIX_FILE);
+        std::cout << "######################1 " << matrix_file_name << "\n";  //NO ERRPR
 
         /* Get file matrix row */
         std::fstream fin(matrix_file_name, std::ios::in);
@@ -195,6 +196,8 @@ int main(int argc, char* argv[])
                 --mod;
             }
         }
+        std::cout << "#######################2 " << matrix_file_name << "\n";
+
     }
 
     /* Broadcast source files name and Number of rows to be processed per process */
@@ -212,12 +215,13 @@ int main(int argc, char* argv[])
     MPI_Bcast(&length_matrix_file_name, 1, MPI_INT, RANK_ROOT, MPI_COMM_WORLD);
     if (0 == rank)
     {
-        MPI_Bcast(matrix_file_name, length_matrix_file_name, MPI_CHAR, RANK_ROOT, MPI_COMM_WORLD);
+        std::cout << "#######################3 " << matrix_file_name << "\n";
+        MPI_Bcast(matrix_file_name, length_matrix_file_name + 1, MPI_CHAR, RANK_ROOT, MPI_COMM_WORLD);
     }
     else
     {
         matrix_file_name = new char[length_matrix_file_name];
-        MPI_Bcast(matrix_file_name, length_matrix_file_name, MPI_CHAR, RANK_ROOT, MPI_COMM_WORLD);
+        MPI_Bcast(matrix_file_name, length_matrix_file_name + 1, MPI_CHAR, RANK_ROOT, MPI_COMM_WORLD);
     }
 
     MPI_Bcast(num_col_every_rank, size, MPI_INT, RANK_ROOT, MPI_COMM_WORLD);
@@ -233,11 +237,12 @@ int main(int argc, char* argv[])
     std::vector<int> v_vector = splitString(str_v, SEPARATOR);
     fin.close();
 
+        std::cout << "#######################4 " << matrix_file_name << "\n";
 
 #if DEBUG
     std::cout << "=============================== rank " << rank << " ===============================\n"
               << "length_matrix_file_name = " << length_matrix_file_name << "\n"
-              << "matrix_file_name = " << matrix_file_name << "\n"
+              << "matrix_file_name = " << matrix_file_name << "\n\n"
 
               << "length_vector_file_name = " << length_vector_file_name << "\n"
               << "vector_file_name = " << vector_file_name  << "\n";
