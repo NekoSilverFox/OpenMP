@@ -17,6 +17,8 @@
  */
 
 #include <iostream>
+#include <sstream>
+#include <vector>
 #include <fstream>
 #include <mpi.h>
 
@@ -24,8 +26,9 @@
 #define GENERATE_NEW_MATRIX_VECTOR  1
 const int RANK_ROOT             = 0;
 const int RANDOM_SAND           = 5140903;
-const char SOURCE_MATRIX_FILE[] = "source_matrix.txt";
 const char SOURCE_VECTOR_FILE[] = "source_vector.txt";
+const char SOURCE_MATRIX_FILE[] = "source_matrix.txt";
+const char SEPARATOR            = ' ';
 const int MATRIX_MAX_NUM        = 10;
 const int VECTOR_MAX_NUM        = 10;
 const int M                     = 10;
@@ -59,7 +62,7 @@ bool generateRadomMatrix2File(const char* file_name, const int m, const int n)
     {
         for (int col = 0; col < n; col++)
         {
-            fout << rand() % MATRIX_MAX_NUM << ((col + 1 == m)? "\n" : " ");
+            fout << rand() % MATRIX_MAX_NUM << ((col + 1 == m)? '\n' : SEPARATOR);
         }
     }
     fout.close();
@@ -91,6 +94,25 @@ bool generateRadomVector2File(const char* file_name, const int n)
     }
     fout.close();
     return true;
+}
+
+/**
+ * @brief Split string by chat c
+ * 
+ * @param str 
+ * @param c 
+ * @return std::vector<int> 
+ */
+std::vector<int> splitString(std::string str, const char c = SEPARATOR)
+{
+    std::istringstream iss(str);
+    std::vector<int> res;
+    std::string token;
+    while (getline(iss, token, c))
+    {
+        res.push_back(std::stoi(token));
+    }
+    return res;
 }
 
 
@@ -138,11 +160,11 @@ int main(int argc, char* argv[])
     if (0 == rank)
     {
         /* Get file names for per process */
-        length_vector_file_name = strlen(SOURCE_VECTOR_FILE);
+        length_vector_file_name = strlen(SOURCE_VECTOR_FILE) + 1;
         vector_file_name = new char[length_vector_file_name];
         strcpy(vector_file_name, SOURCE_VECTOR_FILE);
 
-        length_matrix_file_name = strlen(SOURCE_MATRIX_FILE);
+        length_matrix_file_name = strlen(SOURCE_MATRIX_FILE) + 1;
         matrix_file_name = new char(length_matrix_file_name);
         strcpy(matrix_file_name, SOURCE_MATRIX_FILE);
 
@@ -200,17 +222,35 @@ int main(int argc, char* argv[])
 
     MPI_Bcast(num_col_every_rank, size, MPI_INT, RANK_ROOT, MPI_COMM_WORLD);
 
-#if DEBUG
-        std::cout << "=============================== rank " << rank << " ===============================\n"
-                  << "length_matrix_file_name = " << length_matrix_file_name << "\n"
-                  << "local_matrix_file_name = " << matrix_file_name << "\n"
+    /* Get vector */
+    std::string str_v;
+    std::fstream fin(vector_file_name, std::ios::in);
+    if (!vector_file_name)
+    {
+        std::cerr << "[ERROR] Can not open file " << matrix_file_name << "in rank " << rank << "\n";
+    }
+    getline(fin, str_v);
+    std::vector<int> v_vector = splitString(str_v, SEPARATOR);
+    fin.close();
 
-                  << "length_vector_file_name = " << length_vector_file_name << "\n"
-                  << "local_vector_file_name = " << vector_file_name  << "\n";
-        for (int i = 0; i < size; i++)
-        {
-            std::cout << num_col_every_rank[i] << " ";
-        }
+
+#if DEBUG
+    std::cout << "=============================== rank " << rank << " ===============================\n"
+              << "length_matrix_file_name = " << length_matrix_file_name << "\n"
+              << "matrix_file_name = " << matrix_file_name << "\n"
+
+              << "length_vector_file_name = " << length_vector_file_name << "\n"
+              << "vector_file_name = " << vector_file_name  << "\n";
+        
+    std::cout << "num_col_every_rank in rank " << rank << " is ";
+    for (int i = 0; i < size; i++)
+    {
+        std::cout << num_col_every_rank[i] << " ";
+    }
+
+    std::cout << "\nv_vector in rank " << rank << " is ";
+    for (auto i : v_vector) std::cout << i << " ";
+    std::cout << "\n";
 #endif
 
 
