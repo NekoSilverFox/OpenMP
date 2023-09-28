@@ -167,7 +167,6 @@ int main(int argc, char* argv[])
         length_matrix_file_name = strlen(SOURCE_MATRIX_FILE);
         matrix_file_name = new char(length_matrix_file_name);
         strcpy(matrix_file_name, SOURCE_MATRIX_FILE);
-        std::cout << "######################1 " << matrix_file_name << "\n";  //NO ERRPR
 
         /* Get file matrix row */
         std::fstream fin(matrix_file_name, std::ios::in);
@@ -196,7 +195,6 @@ int main(int argc, char* argv[])
                 --mod;
             }
         }
-        std::cout << "#######################2 " << matrix_file_name << "\n";
 
     }
 
@@ -215,7 +213,6 @@ int main(int argc, char* argv[])
     MPI_Bcast(&length_matrix_file_name, 1, MPI_INT, RANK_ROOT, MPI_COMM_WORLD);
     if (0 == rank)
     {
-        std::cout << "#######################3 " << matrix_file_name << "\n";
         MPI_Bcast(matrix_file_name, length_matrix_file_name, MPI_CHAR, RANK_ROOT, MPI_COMM_WORLD);
     }
     else
@@ -228,16 +225,43 @@ int main(int argc, char* argv[])
 
     /* Get vector */
     std::string str_v;
-    std::fstream fin(vector_file_name, std::ios::in);
+    std::fstream finv(vector_file_name, std::ios::in);
     if (!vector_file_name)
     {
         std::cerr << "[ERROR] Can not open file " << matrix_file_name << "in rank " << rank << "\n";
     }
-    getline(fin, str_v);
+    getline(finv, str_v);
     std::vector<int> v_vector = splitString(str_v, SEPARATOR);
-    fin.close();
+    finv.close();
 
-        std::cout << "#######################4 " << matrix_file_name << "\n";
+    /* Move file ptr for local rank */
+    int i_ptr = 0;
+    for (int i = 0; i < rank; i++)
+    {
+        i_ptr += num_col_every_rank[i];
+    }
+    std::fstream finm(matrix_file_name, std::ios::in);
+    std::string cur_line;
+    while (0 != i_ptr)
+    {
+        getline(finm, cur_line);
+        --i_ptr;
+    }
+
+    /* Compute matrix's line x vector */
+    std::vector<int> v_matrix_cur_line;
+    for (int i = 0; i < num_col_every_rank[rank]; i++)
+    {
+        getline(finm, cur_line);
+        v_matrix_cur_line = splitString(cur_line, SEPARATOR);
+
+        for (auto e : v_matrix_cur_line) std::cout << e << "-r" << rank << " ";
+        std::cout << "\n";
+    }
+    finm.close();
+    
+    
+    
 
 #if DEBUG
     std::cout << "=============================== rank " << rank << " ===============================\n"
@@ -257,7 +281,6 @@ int main(int argc, char* argv[])
     for (auto i : v_vector) std::cout << i << " ";
     std::cout << "\n";
 #endif
-
 
     MPI_Finalize();
 }
