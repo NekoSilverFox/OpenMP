@@ -26,8 +26,8 @@
 #define GENERATE_NEW_MATRIX_VECTOR  1
 const int RANK_ROOT             = 0;
 const int RANDOM_SAND           = 5140903;
-const char SOURCE_VECTOR_FILE[] = "source_vector.txt";
-const char SOURCE_MATRIX_FILE[] = "source_matrix.txt";
+const char SOURCE_MATRIX_FILE[] = "source_matrix";
+const char SOURCE_VECTOR_FILE[] = "source_vector";
 const char SEPARATOR            = ' ';
 const int MATRIX_MAX_NUM        = 10;
 const int VECTOR_MAX_NUM        = 10;
@@ -216,12 +216,12 @@ int main(int argc, char* argv[])
     if (0 == rank)
     {
         std::cout << "#######################3 " << matrix_file_name << "\n";
-        MPI_Bcast(matrix_file_name, length_matrix_file_name + 1, MPI_CHAR, RANK_ROOT, MPI_COMM_WORLD);
+        MPI_Bcast(matrix_file_name, length_matrix_file_name, MPI_CHAR, RANK_ROOT, MPI_COMM_WORLD);
     }
     else
     {
         matrix_file_name = new char[length_matrix_file_name];
-        MPI_Bcast(matrix_file_name, length_matrix_file_name + 1, MPI_CHAR, RANK_ROOT, MPI_COMM_WORLD);
+        MPI_Bcast(matrix_file_name, length_matrix_file_name, MPI_CHAR, RANK_ROOT, MPI_COMM_WORLD);
     }
 
     MPI_Bcast(num_col_every_rank, size, MPI_INT, RANK_ROOT, MPI_COMM_WORLD);
