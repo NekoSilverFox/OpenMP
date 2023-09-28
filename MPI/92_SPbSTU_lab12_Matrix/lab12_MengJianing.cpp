@@ -272,12 +272,12 @@ int main(int argc, char* argv[])
     MPI_Status status;
     MPI_Isend(local_arr_res, num_col_every_rank[rank], MPI_INT, RANK_ROOT, TAG_RES, MPI_COMM_WORLD, &request);
 
-    /***************************** Mix result arr *****************************/
+    /***************************** Rank 0 Mix local result arr for every rank *****************************/
     if (0 == rank)
     {
         int* res_rank_buf;
         int cur_i_arr_res = 0;
-        arr_res = new int[row_matrix];
+        arr_res = new int[row_matrix];  // Final res arr
         for (int i = 0; i < size; i++)
         {
             res_rank_buf = new int[num_col_every_rank[i]];
