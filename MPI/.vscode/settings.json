@@ -72,7 +72,18 @@
         "set": "cpp",
         "stack": "cpp",
         "format": "cpp",
-        "iomanip": "cpp"
+        "iomanip": "cpp",
+        "bit": "cpp",
+        "codecvt": "cpp",
+        "condition_variable": "cpp",
+        "memory_resource": "cpp",
+        "numeric": "cpp",
+        "fstream": "cpp",
+        "numbers": "cpp",
+        "semaphore": "cpp",
+        "stop_token": "cpp",
+        "thread": "cpp",
+        "cinttypes": "cpp"
     },
     "cmake.sourceDirectory": "/Users/fox/雪狸的文件/Programma/OpenMP/MPI/01_macos_mpi_test"
 }
